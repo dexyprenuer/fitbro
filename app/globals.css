@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ─── Dark Theme ───────────────────────────────────────────────────────────── */
+
+:root[data-theme='dark'] {
+  /* Backgrounds */
+  --bg:               #0d0f14;
+  --bg-secondary:     #12151c;
+  --bg-tertiary:      #171a24;
+
+  /* Surfaces */
+  --surface:          rgba(255, 255, 255, 0.04);
+  --surface-hover:    rgba(255, 255, 255, 0.07);
+  --surface-active:   rgba(255, 255, 255, 0.10);
+  --card:             rgba(255, 255, 255, 0.05);
+  --card-hover:       rgba(255, 255, 255, 0.08);
+
+  /* Glass */
+  --glass:            rgba(255, 255, 255, 0.06);
+  --glass-heavy:      rgba(255, 255, 255, 0.10);
+  --glass-border:     rgba(255, 255, 255, 0.09);
+  --glass-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Accent */
+  --accent:           #6c63ff;
+  --accent-hover:     #7d75ff;
+  --accent-active:    #5a52e0;
+  --accent-dim:       rgba(108, 99, 255, 0.18);
+  --accent-dim-hover: rgba(108, 99, 255, 0.28);
+  --accent-glow:      rgba(108, 99, 255, 0.35);
+
+  /* Secondary accent */
+  --secondary-accent:     #a78bfa;
+  --secondary-accent-dim: rgba(167, 139, 250, 0.15);
+
+  /* Semantic */
+  --success:          #34d399;
+  --success-dim:      rgba(52, 211, 153, 0.18);
+  --success-glow:     rgba(52, 211, 153, 0.30);
+  --warning:          #fbbf24;
+  --warning-dim:      rgba(251, 191, 36, 0.18);
+  --destructive:      #f87171;
+  --destructive-dim:  rgba(248, 113, 113, 0.18);
+
+  /* Text */
+  --text-primary:     #f5f6fa;
+  --text-secondary:   #8b8fa8;
+  --text-muted:       #4b4f63;
+  --text-inverse:     #0d0f14;
+
+  /* Border */
+  --border:           rgba(255, 255, 255, 0.07);
+  --border-strong:    rgba(255, 255, 255, 0.14);
+
+  /* Shadow */
+  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow:           0 8px 32px rgba(0, 0, 0, 0.40);
+  --shadow-lg:        0 16px 48px rgba(0, 0, 0, 0.50);
+  --shadow-glow:      0 0 24px var(--accent-glow);
+
+  /* Aurora */
+  --aurora-1:         rgba(108, 99, 255, 0.13);
+  --aurora-2:         rgba(52, 211, 153, 0.07);
+  --aurora-3:         rgba(167, 139, 250, 0.05);
+}
+
+/* ─── Light Theme ──────────────────────────────────────────────────────────── */
+
+:root[data-theme='light'] {
+  /* Backgrounds */
+  --bg:               #f0f2f7;
+  --bg-secondary:     #e8eaf0;
+  --bg-tertiary:      #e0e3ec;
+
+  /* Surfaces */
+  --surface:          rgba(255, 255, 255, 0.75);
+  --surface-hover:    rgba(255, 255, 255, 0.92);
+  --surface-active:   rgba(255, 255, 255, 1.00);
+  --card:             rgba(255, 255, 255, 0.80);
+  --card-hover:       rgba(255, 255, 255, 0.95);
+
+  /* Glass */
+  --glass:            rgba(255, 255, 255, 0.60);
+  --glass-heavy:      rgba(255, 255, 255, 0.80);
+  --glass-border:     rgba(255, 255, 255, 0.85);
+  --glass-border-strong: rgba(255, 255, 255, 1.00);
+
+  /* Accent */
+  --accent:           #5b52e8;
+  --accent-hover:     #6b63f0;
+  --accent-active:    #4b43d0;
+  --accent-dim:       rgba(91, 82, 232, 0.10);
+  --accent-dim-hover: rgba(91, 82, 232, 0.18);
+  --accent-glow:      rgba(91, 82, 232, 0.22);
+
+  /* Secondary accent */
+  --secondary-accent:     #7c3aed;
+  --secondary-accent-dim: rgba(124, 58, 237, 0.10);
+
+  /* Semantic */
+  --success:          #059669;
+  --success-dim:      rgba(5, 150, 105, 0.10);
+  --success-glow:     rgba(5, 150, 105, 0.20);
+  --warning:          #d97706;
+  --warning-dim:      rgba(217, 119, 6, 0.10);
+  --destructive:      #dc2626;
+  --destructive-dim:  rgba(220, 38, 38, 0.10);
+
+  /* Text */
+  --text-primary:     #13141a;
+  --text-secondary:   #5a5e78;
+  --text-muted:       #9ca3b8;
+  --text-inverse:     #f5f6fa;
+
+  /* Border */
+  --border:           rgba(0, 0, 0, 0.07);
+  --border-strong:    rgba(0, 0, 0, 0.14);
+
+  /* Shadow */
+  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow:           0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-lg:        0 16px 48px rgba(0, 0, 0, 0.16);
+  --shadow-glow:      0 0 24px var(--accent-glow);
+
+  /* Aurora */
+  --aurora-1:         rgba(91, 82, 232, 0.07);
+  --aurora-2:         rgba(5, 150, 105, 0.04);
+  --aurora-3:         rgba(124, 58, 237, 0.04);
+}
+
+/* ─── Base Reset ───────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.35s ease, color 0.20s ease;
+  overflow-x: hidden;
+  /* Smooth rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ─── Aurora Background ────────────────────────────────────────────────────── */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% -5%,  var(--aurora-1), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 105%, var(--aurora-2), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50%  50%, var(--aurora-3), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.45s ease;
+}
+
+/* ─── Typography ───────────────────────────────────────────────────────────── */
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.2;
+}
+
+/* ─── Glass Utility Classes ────────────────────────────────────────────────── */
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-heavy {
+  background: var(--glass-heavy);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid var(--glass-border-strong);
+}
+
+/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 0; background: transparent; }
+
+/* ─── Safe Area ────────────────────────────────────────────────────────────── */
+
+.pb-safe {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* ─── Focus Ring ───────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ─── Theme Transition ─────────────────────────────────────────────────────── */
+
+.theme-transition,
+.theme-transition * {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.20s ease,
+    box-shadow 0.35s ease !important;
+}
+
+/* ─── Tabular Numbers ──────────────────────────────────────────────────────── */
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
