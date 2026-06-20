@@ -54,3 +54,13 @@ export type AppSettings = {
   theme: Theme;
   notificationsEnabled: boolean;
 };
+
+export type ExerciseOverride = {
+  exerciseId: string;
+  customSets?: number;
+  customReps?: number;
+};
+
+export type WorkoutSettings = {
+  overrides: Record<string, ExerciseOverride>;
+};
