@@ -32,25 +32,25 @@ export type Routine = {
   workoutDays: WorkoutDay[];
 };
 
-export type SessionExercise = {
+export type CompletedExerciseLog = {
   exerciseId: string;
-  exerciseName: string;
-  sets: number;
-  reps: number;
-  completedSets: number;
+  completedAt: number;
 };
 
 export type Session = {
   id: string;
   routineId: string;
   workoutDayId: string;
-  exercises: SessionExercise[];
-  startedAt: number;
-  completedAt?: number;
-  isCompleted: boolean;
+  startTimestamp: number;
+  endTimestamp?: number;
+  duration?: number;
+  completedDate?: string;
+  completedExercises: CompletedExerciseLog[];
+  currentExerciseIndex: number;
+  isActive: boolean;
 };
 
-// Added this alias to fix the WorkoutSession import error in useSessionStore.ts
+// Type alias utilized by useSessionStore.ts
 export type WorkoutSession = Session;
 
 export type AppSettings = {
