@@ -35,6 +35,7 @@ export default function WorkoutDayPage() {
   const isThisSession = session?.isActive && session.workoutDayId === dayId;
   const exercises = workoutDay?.exercises ?? [];
   const currentIdx = isThisSession ? session.currentExerciseIndex : 0;
+  const currentExercise = exercises[currentIdx];
   const isRunning = isThisSession;
 
   if (!workoutDay) {
@@ -50,14 +51,14 @@ export default function WorkoutDayPage() {
   }
 
   function handleExerciseDone() {
-    if (!isThisSession) return;
+    if (!isThisSession || !session) return;
     const nextIdx = session.currentExerciseIndex + 1;
     completeExercise();
 
     if (nextIdx >= exercises.length) {
       const finished = endSession();
       if (finished) {
-        recordWorkoutCompletion();
+        recordWorkoutCompletion(dayId);
         setCompletedSession({
           duration: finished.duration ?? 0,
           count: exercises.length,
@@ -78,7 +79,6 @@ export default function WorkoutDayPage() {
   return (
     <PageTransition>
       <div className="px-4 pt-10 pb-8 max-w-lg mx-auto">
-        {/* Top bar */}
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
@@ -93,7 +93,6 @@ export default function WorkoutDayPage() {
           )}
         </div>
 
-        {/* Title */}
         <div className="mb-7">
           <p className="text-4xl mb-2">{workoutDay.emoji}</p>
           <h1
@@ -107,7 +106,6 @@ export default function WorkoutDayPage() {
           </p>
         </div>
 
-        {/* Pre-session */}
         {!isRunning && (
           <AnimatePresence>
             <motion.div
@@ -159,12 +157,12 @@ export default function WorkoutDayPage() {
           </AnimatePresence>
         )}
 
-        {/* Active session */}
-        {isRunning && session && (
+        {/* Guard applied to currentExercise to prevent out-of-bounds rendering crashes */}
+        {isRunning && session && currentExercise && (
           <AnimatePresence mode="wait">
             <SessionExerciseCard
               key={currentIdx}
-              exercise={exercises[currentIdx]}
+              exercise={currentExercise}
               index={currentIdx}
               total={exercises.length}
               onDone={handleExerciseDone}

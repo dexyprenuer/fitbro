@@ -15,10 +15,12 @@ interface WorkoutCardProps {
 }
 
 export function WorkoutCard({ workoutDay, index }: WorkoutCardProps) {
-  const completedDates = useAppStore((s) => s.completedDates);
+  const completedWorkoutIds = useAppStore((s) => s.completedWorkoutIds);
   const getEffective = useSettingsStore((s) => s.getEffective);
 
-  const doneToday = completedDates.includes(todayString());
+  // Checks the precise key (e.g., "2026-06-20:push") instead of globally checking today's date
+  const today = todayString();
+  const isCompleted = completedWorkoutIds?.includes(`${today}:${workoutDay.id}`) ?? false;
 
   return (
     <Link href={`/exercise/${workoutDay.id}`}>
@@ -49,7 +51,7 @@ export function WorkoutCard({ workoutDay, index }: WorkoutCardProps) {
             </p>
           </div>
 
-          {doneToday ? (
+          {isCompleted ? (
             <CheckCircle2 size={20} style={{ color: 'var(--success)' }} />
           ) : (
             <ChevronRight size={20} style={{ color: 'var(--text-muted)' }} />

@@ -6,6 +6,7 @@ export type AppState = {
   longestStreak: number;
   lastWorkoutDate: string | null;
   completedDates: string[];
+  completedWorkoutIds: string[]; // Tracks specific unique session completions per day
   displayName: string;
 };
 
@@ -50,7 +51,6 @@ export type Session = {
   isActive: boolean;
 };
 
-// Type alias utilized by useSessionStore.ts
 export type WorkoutSession = Session;
 
 export type AppSettings = {

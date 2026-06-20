@@ -1,13 +1,10 @@
 import { create } from 'zustand';
 import { storage } from '@/lib/storage';
 import { computeNewStreak, todayString, isStreakAlive } from '@/lib/streak';
-import type { AppState, Theme } from '@/types';
+import type { AppStore, AppState, Theme } from '@/types';
 
-interface AppStore extends AppState {
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-  recordWorkoutCompletion: () => void;
-  hydrate: () => void;
+interface ExtendedAppStore extends AppStore {
+  recordWorkoutCompletion: (workoutDayId: string) => void;
 }
 
 const DEFAULTS: AppState = {
@@ -16,21 +13,21 @@ const DEFAULTS: AppState = {
   longestStreak: 0,
   lastWorkoutDate: null,
   completedDates: [],
+  completedWorkoutIds: [],
   displayName: 'Athlete',
 };
 
-export const useAppStore = create<AppStore>((set, get) => ({
+export const useAppStore = create<ExtendedAppStore>((set, get) => ({
   ...DEFAULTS,
 
   hydrate() {
     const saved = storage.get<AppState>('app', DEFAULTS);
-    // Check if streak is still alive on hydration
     const alive = isStreakAlive(saved.lastWorkoutDate);
     set({
       ...saved,
       currentStreak: alive ? saved.currentStreak : 0,
+      completedWorkoutIds: saved.completedWorkoutIds || [],
     });
-    // Apply theme to document
     document.documentElement.setAttribute('data-theme', saved.theme);
   },
 
@@ -45,7 +42,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().setTheme(next);
   },
 
-  recordWorkoutCompletion() {
+  recordWorkoutCompletion(workoutDayId) {
     const state = get();
     const today = todayString();
     const { newStreak, changed } = computeNewStreak({
@@ -55,9 +52,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       dateCompleted: today,
     });
 
-    if (!changed) return;
+    const completedWorkoutIds = [...(state.completedWorkoutIds || [])];
+    const trackingKey = `${today}:${workoutDayId}`;
+    if (!completedWorkoutIds.includes(trackingKey)) {
+      completedWorkoutIds.push(trackingKey);
+    }
 
-    const completedDates = [...state.completedDates, today].sort();
     const longestStreak = Math.max(newStreak, state.longestStreak);
 
     const next: AppState = {
@@ -65,7 +65,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       currentStreak: newStreak,
       longestStreak,
       lastWorkoutDate: today,
-      completedDates,
+      completedDates: changed ? [...state.completedDates, today].sort() : state.completedDates,
+      completedWorkoutIds,
     };
     set(next);
     storage.set('app', next);
