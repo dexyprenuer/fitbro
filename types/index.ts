@@ -1,3 +1,14 @@
+export type Theme = 'light' | 'dark' | 'system';
+
+export type AppState = {
+  theme: Theme;
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate: string | null;
+  completedDates: string[];
+  displayName: string;
+};
+
 export type Exercise = {
   id: string;
   name: string;
@@ -40,6 +51,6 @@ export type Session = {
 };
 
 export type AppSettings = {
-  theme: 'light' | 'dark' | 'system';
+  theme: Theme;
   notificationsEnabled: boolean;
 };
