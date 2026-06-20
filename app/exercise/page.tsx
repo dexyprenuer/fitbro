@@ -3,6 +3,7 @@
 import { PageTransition } from '@/components/ui/PageTransition';
 import { WorkoutCard } from '@/components/home/WorkoutCard';
 import { useRoutineStore } from '@/store/useRoutineStore';
+import type { WorkoutDay } from '@/types';
 
 export default function ExercisePage() {
   const activeRoutine = useRoutineStore((s) => s.activeRoutine);
@@ -16,7 +17,7 @@ export default function ExercisePage() {
         </h1>
         <p className="text-sm text-[var(--text-secondary)] mb-6">{routine.name}</p>
         <div className="space-y-2">
-          {routine.workoutDays.map((day, i) => (
+          {routine.workoutDays.map((day: WorkoutDay, i: number) => (
             <WorkoutCard key={day.id} workoutDay={day} index={i} />
           ))}
         </div>
