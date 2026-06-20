@@ -3,19 +3,21 @@ export type Exercise = {
   name: string;
   sets: number;
   reps: number;
-  duration?: number;
-  notes?: string;
+  instructions?: string;
 };
 
 export type WorkoutDay = {
   id: string;
-  name: string;
+  title: string;
+  emoji: string;
   exercises: Exercise[];
 };
 
 export type Routine = {
   id: string;
   name: string;
+  type: 'preset' | 'custom';
+  schedule: (string | null)[];
   workoutDays: WorkoutDay[];
 };
 
@@ -24,7 +26,6 @@ export type SessionExercise = {
   exerciseName: string;
   sets: number;
   reps: number;
-  duration?: number;
   completedSets: number;
 };
 
