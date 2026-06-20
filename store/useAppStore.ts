@@ -1,9 +1,13 @@
 import { create } from 'zustand';
 import { storage } from '@/lib/storage';
 import { computeNewStreak, todayString, isStreakAlive } from '@/lib/streak';
-import type { AppStore, AppState, Theme } from '@/types';
+import type { AppState, Theme } from '@/types';
 
-interface ExtendedAppStore extends AppStore {
+// Explicitly merge AppState (data fields) and actions together
+interface AppStoreState extends AppState {
+  hydrate: () => void;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
   recordWorkoutCompletion: (workoutDayId: string) => void;
 }
 
@@ -17,7 +21,7 @@ const DEFAULTS: AppState = {
   displayName: 'Athlete',
 };
 
-export const useAppStore = create<ExtendedAppStore>((set, get) => ({
+export const useAppStore = create<AppStoreState>((set, get) => ({
   ...DEFAULTS,
 
   hydrate() {
