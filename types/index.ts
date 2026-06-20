@@ -50,6 +50,9 @@ export type Session = {
   isCompleted: boolean;
 };
 
+// Added this alias to fix the WorkoutSession import error in useSessionStore.ts
+export type WorkoutSession = Session;
+
 export type AppSettings = {
   theme: Theme;
   notificationsEnabled: boolean;
