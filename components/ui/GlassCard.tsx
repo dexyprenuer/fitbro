@@ -6,7 +6,6 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   variant?: GlassCardVariant;
-  /** Removes padding for custom layouts */
   noPad?: boolean;
 }
 
@@ -14,7 +13,7 @@ const variantStyles: Record<GlassCardVariant, React.CSSProperties> = {
   default: {
     background: 'var(--glass)',
     borderColor: 'var(--glass-border)',
-    boxShadow: 'var(--shadow)',
+    boxShadow: 'var(--shadow-sm)',
   },
   elevated: {
     background: 'var(--glass-heavy)',
@@ -29,13 +28,13 @@ const variantStyles: Record<GlassCardVariant, React.CSSProperties> = {
   },
   accent: {
     background: 'linear-gradient(135deg, var(--accent-dim) 0%, var(--glass) 100%)',
-    borderColor: 'var(--accent-dim)',
-    boxShadow: 'var(--shadow)',
+    borderColor: 'rgba(108,99,255,0.18)',
+    boxShadow: 'var(--shadow), 0 0 0 1px var(--accent-dim)',
   },
   success: {
     background: 'linear-gradient(135deg, var(--success-dim) 0%, var(--glass) 100%)',
-    borderColor: 'var(--success-dim)',
-    boxShadow: 'var(--shadow)',
+    borderColor: 'rgba(52,211,153,0.18)',
+    boxShadow: 'var(--shadow), 0 0 0 1px var(--success-dim)',
   },
 };
 
@@ -50,11 +49,18 @@ export function GlassCard({
   return (
     <div
       className={cn(
-        'rounded-2xl border backdrop-blur-xl',
+        'border backdrop-blur-xl',
         !noPad && 'p-4',
         className
       )}
-      style={{ ...variantStyles[variant], ...style }}
+      style={{
+        borderRadius: 'var(--radius-lg)',
+        backdropFilter: 'blur(24px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+        willChange: 'transform',
+        ...variantStyles[variant],
+        ...style,
+      }}
       {...props}
     >
       {children}
