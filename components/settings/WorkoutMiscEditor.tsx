@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Minus, Plus, RotateCcw } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import type { Exercise } from '@/types';
 
@@ -31,25 +29,37 @@ export function WorkoutMiscEditor({ exercises, workoutTitle }: WorkoutMiscEditor
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider px-1">
-        {workoutTitle}
-      </p>
+      <p className="section-label px-1">{workoutTitle}</p>
+
       {exercises.map((ex) => {
         const { sets, reps } = getEffective(ex.id, ex.sets, ex.reps);
         const isOverridden = !!overrides[ex.id];
 
         return (
-          <GlassCard key={ex.id} className="p-4">
+          <div
+            key={ex.id}
+            className="p-4"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
             <div className="flex items-center justify-between mb-3">
-              <p className="font-medium text-[var(--text-primary)] text-sm">{ex.name}</p>
+              <p className="font-display font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+                {ex.name}
+              </p>
               {isOverridden && (
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
                   onClick={() => reset(ex)}
-                  className="flex items-center gap-1 text-xs text-[var(--text-muted)] active:text-[var(--warning)]"
+                  className="flex items-center gap-1 text-xs font-medium"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   <RotateCcw size={12} />
                   Reset
-                </button>
+                </motion.button>
               )}
             </div>
 
@@ -59,7 +69,9 @@ export function WorkoutMiscEditor({ exercises, workoutTitle }: WorkoutMiscEditor
                 { label: 'Reps', value: reps, field: 'reps' as const },
               ].map(({ label, value, field }) => (
                 <div key={field} className="flex items-center gap-3">
-                  <span className="text-xs text-[var(--text-secondary)] w-8">{label}</span>
+                  <span className="text-xs w-8" style={{ color: 'var(--text-secondary)' }}>
+                    {label}
+                  </span>
                   <div className="flex items-center gap-2">
                     <motion.button
                       whileTap={{ scale: 0.85 }}
@@ -69,7 +81,10 @@ export function WorkoutMiscEditor({ exercises, workoutTitle }: WorkoutMiscEditor
                     >
                       <Minus size={14} style={{ color: 'var(--text-secondary)' }} />
                     </motion.button>
-                    <span className="font-display font-bold text-[var(--text-primary)] w-6 text-center tabular-nums">
+                    <span
+                      className="font-display font-bold w-6 text-center tabular-nums"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
                       {value}
                     </span>
                     <motion.button
@@ -84,7 +99,7 @@ export function WorkoutMiscEditor({ exercises, workoutTitle }: WorkoutMiscEditor
                 </div>
               ))}
             </div>
-          </GlassCard>
+          </div>
         );
       })}
     </div>

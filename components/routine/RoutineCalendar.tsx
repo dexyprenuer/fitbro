@@ -10,7 +10,6 @@ import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useRoutineStore } from '@/store/useRoutineStore';
 import { useAppStore } from '@/store/useAppStore';
-import { cn } from '@/lib/utils';
 
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
@@ -47,7 +46,6 @@ export function RoutineCalendar() {
     setViewDate((d) => subMonths(d, 1));
   }
 
-  /* Sliding month transition variants */
   const monthVariants = {
     enter:  (dir: number) => ({ opacity: 0, x: dir * 40 }),
     center: { opacity: 1, x: 0 },
@@ -56,7 +54,7 @@ export function RoutineCalendar() {
 
   return (
     <GlassCard variant="elevated" noPad className="overflow-hidden">
-      {/* ── Month header ─────────────────────────────────────────── */}
+      {/* Month header */}
       <div
         className="flex items-center justify-between px-5 py-4"
         style={{ borderBottom: '1px solid var(--border)' }}
@@ -88,7 +86,7 @@ export function RoutineCalendar() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.22, ease: [0.32, 0, 0.67, 0] }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="font-display font-bold text-base"
             style={{ color: 'var(--text-primary)' }}
           >
@@ -112,7 +110,7 @@ export function RoutineCalendar() {
         </motion.button>
       </div>
 
-      {/* ── Day labels ────────────────────────────────────────────── */}
+      {/* Day labels */}
       <div className="grid grid-cols-7 px-3 pt-3 pb-1">
         {DAY_LABELS.map((d) => (
           <p
@@ -125,7 +123,7 @@ export function RoutineCalendar() {
         ))}
       </div>
 
-      {/* ── Day grid ─────────────────────────────────────────────── */}
+      {/* Day grid */}
       <AnimatePresence mode="wait" initial={false} custom={direction}>
         <motion.div
           key={format(viewDate, 'yyyy-MM')}
@@ -137,12 +135,10 @@ export function RoutineCalendar() {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="grid grid-cols-7 gap-y-1 px-3 pb-4"
         >
-          {/* Leading blanks */}
           {Array.from({ length: leadingBlanks }).map((_, i) => (
             <div key={`blank-${i}`} />
           ))}
 
-          {/* Day cells */}
           {days.map((date) => {
             const workout    = getWorkoutForDay(date);
             const isToday    = isSameDay(date, today);
@@ -154,18 +150,17 @@ export function RoutineCalendar() {
             return (
               <motion.div
                 key={dateStr}
-                whileTap={hasWorkout ? { scale: 0.85 } : {}}
+                whileTap={hasWorkout ? { scale: 0.88 } : {}}
                 transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                className="flex flex-col items-center py-1 gap-[3px]"
-                style={{ opacity: inMonth ? 1 : 0.25 }}
+                className="flex items-center justify-center py-1"
+                style={{ opacity: inMonth ? 1 : 0.3 }}
               >
-                {/* Date cell */}
                 <div
-                  className="flex items-center justify-center text-[13px] font-semibold relative"
+                  className="flex items-center justify-center text-[13px] font-semibold"
                   style={{
                     width:  '36px',
                     height: '36px',
-                    borderRadius: isToday ? 'var(--radius-sm)' : 'var(--radius-xs)',
+                    borderRadius: isToday ? 'var(--radius-full)' : 'var(--radius-sm)',
                     background: isToday
                       ? 'var(--accent)'
                       : isCompleted
@@ -180,18 +175,7 @@ export function RoutineCalendar() {
                       : hasWorkout
                       ? 'var(--accent)'
                       : 'var(--text-secondary)',
-                    border: isToday
-                      ? '2px solid var(--accent)'
-                      : isCompleted
-                      ? '1px solid rgba(52,211,153,0.30)'
-                      : hasWorkout
-                      ? '1px solid var(--accent-dim)'
-                      : '1px solid transparent',
-                    boxShadow: isToday
-                      ? '0 0 14px var(--accent-glow)'
-                      : isCompleted
-                      ? '0 0 8px var(--success-glow)'
-                      : 'none',
+                    boxShadow: isToday ? '0 4px 12px var(--accent-glow)' : 'none',
                     transition: 'background 0.2s ease, box-shadow 0.2s ease',
                   }}
                 >
@@ -205,26 +189,13 @@ export function RoutineCalendar() {
                     date.getDate()
                   )}
                 </div>
-
-                {/* Workout emoji indicator */}
-                {hasWorkout && (
-                  <span
-                    style={{
-                      fontSize: '9px',
-                      lineHeight: 1,
-                      opacity: isCompleted ? 0.5 : 0.85,
-                    }}
-                  >
-                    {workout!.emoji}
-                  </span>
-                )}
               </motion.div>
             );
           })}
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Legend ───────────────────────────────────────────────── */}
+      {/* Legend */}
       <div
         className="flex items-center justify-center gap-5 px-5 py-3"
         style={{ borderTop: '1px solid var(--border)' }}

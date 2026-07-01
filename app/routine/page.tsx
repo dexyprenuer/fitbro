@@ -9,16 +9,12 @@ import { useRoutineStore } from '@/store/useRoutineStore';
 
 const stagger = {
   hidden: {},
-  show:   { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+  show:   { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show:   {
-    opacity: 1,
-    y: 0,
-    transition: { type: 'spring', stiffness: 340, damping: 28 },
-  },
+  hidden: { opacity: 0, y: 12 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export default function RoutinePage() {
@@ -36,7 +32,7 @@ export default function RoutinePage() {
           paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom) + 7rem))',
         }}
       >
-        {/* ── Header ───────────────────────────────────────────────── */}
+        {/* Header */}
         <motion.div variants={fadeUp} className="mb-7">
           <p className="section-label mb-1">Your Schedule</p>
           <h1
@@ -51,7 +47,7 @@ export default function RoutinePage() {
             className="inline-flex items-center gap-2 mt-2.5 px-3 py-1.5"
             style={{
               background:   'var(--accent-dim)',
-              border:       '1px solid rgba(108,99,255,0.20)',
+              border:       '1px solid rgba(90,103,242,0.20)',
               borderRadius: 'var(--radius-full)',
             }}
           >
@@ -65,7 +61,7 @@ export default function RoutinePage() {
           </div>
         </motion.div>
 
-        {/* ── Calendar ─────────────────────────────────────────────── */}
+        {/* Calendar */}
         <motion.div variants={fadeUp} className="mb-6">
           <div className="flex items-center gap-2 mb-3 px-1">
             <CalendarDays size={13} style={{ color: 'var(--text-muted)' }} />
@@ -74,7 +70,7 @@ export default function RoutinePage() {
           <RoutineCalendar />
         </motion.div>
 
-        {/* ── Routine selector ─────────────────────────────────────── */}
+        {/* Routine selector */}
         <motion.div variants={fadeUp}>
           <div className="flex items-center gap-2 mb-3 px-1">
             <Repeat size={13} style={{ color: 'var(--text-muted)' }} />

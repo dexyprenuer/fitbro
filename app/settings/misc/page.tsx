@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { WorkoutMiscEditor } from '@/components/settings/WorkoutMiscEditor';
@@ -13,19 +14,24 @@ export default function MiscSettingsPage() {
 
   return (
     <PageTransition>
-      <div className="px-4 pt-10 max-w-lg mx-auto pb-6">
-        <button
+      <div
+        className="px-4 pt-10 max-w-lg mx-auto"
+        style={{ paddingBottom: 'max(4rem, calc(env(safe-area-inset-bottom) + 3rem))' }}
+      >
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-[var(--text-secondary)] mb-6 active:text-[var(--text-primary)]"
+          className="flex items-center gap-2 mb-6 tap-target"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <ArrowLeft size={20} />
           <span className="text-sm font-medium">Back</span>
-        </button>
+        </motion.button>
 
-        <h1 className="font-display text-2xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="font-display text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
           Workout Settings
         </h1>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">
+        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
           Customize sets and reps per exercise.
         </p>
 
