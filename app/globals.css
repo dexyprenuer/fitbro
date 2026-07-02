@@ -7,25 +7,21 @@
 /* ─── FitBro Cream Theme (single palette — no dark mode) ─────────────────── */
 
 :root {
-  /* Backgrounds */
   --bg:               #F5F2EA;
   --bg-secondary:     #EFEBE0;
   --bg-tertiary:      #E8E3D5;
 
-  /* Surfaces */
   --surface:          rgba(26, 26, 26, 0.04);
   --surface-hover:    rgba(26, 26, 26, 0.07);
   --surface-active:   rgba(26, 26, 26, 0.10);
   --card:             #FEFDFA;
   --card-hover:       #FFFFFF;
 
-  /* Glass — soft, premium, no heavy blur */
   --glass:            rgba(255, 255, 255, 0.55);
   --glass-heavy:      rgba(255, 255, 255, 0.78);
   --glass-border:     rgba(255, 255, 255, 0.65);
   --glass-border-strong: rgba(255, 255, 255, 0.90);
 
-  /* Accent */
   --accent:           #5A67F2;
   --accent-hover:     #6B77F5;
   --accent-active:    #4A56E0;
@@ -33,11 +29,9 @@
   --accent-dim-hover: rgba(90, 103, 242, 0.16);
   --accent-glow:      rgba(90, 103, 242, 0.25);
 
-  /* Secondary accent */
   --secondary-accent:     #8B7FF0;
   --secondary-accent-dim: rgba(139, 127, 240, 0.10);
 
-  /* Semantic */
   --success:          #1FAE7A;
   --success-dim:      rgba(31, 174, 122, 0.10);
   --success-glow:     rgba(31, 174, 122, 0.20);
@@ -46,32 +40,26 @@
   --destructive:      #D1554A;
   --destructive-dim:  rgba(209, 85, 74, 0.10);
 
-  /* Text */
   --text-primary:     #1A1A1A;
   --text-secondary:   #6B6B68;
   --text-muted:       #A3A093;
   --text-inverse:     #FFFFFF;
 
-  /* Border */
   --border:           rgba(26, 26, 26, 0.08);
   --border-strong:    rgba(26, 26, 26, 0.14);
 
-  /* Shadow — extremely soft */
   --shadow-sm:        0 2px 8px rgba(26, 26, 26, 0.05);
   --shadow:           0 8px 24px rgba(26, 26, 26, 0.06);
   --shadow-lg:        0 16px 40px rgba(26, 26, 26, 0.08);
   --shadow-glow:      0 8px 24px var(--accent-glow);
   --shadow-nav:       0 8px 28px rgba(26, 26, 26, 0.07);
 
-  /* Aurora — nearly imperceptible, keeps the flat cream feel */
   --aurora-1:         rgba(90, 103, 242, 0.035);
   --aurora-2:         rgba(31, 174, 122, 0.02);
   --aurora-3:         rgba(139, 127, 240, 0.02);
 
-  /* Nav */
   --nav-bg:           rgba(253, 251, 246, 0.86);
 
-  /* Radius scale */
   --radius-xs:  10px;
   --radius-sm:  14px;
   --radius-md:  18px;
@@ -79,6 +67,8 @@
   --radius-xl:  30px;
   --radius-2xl: 36px;
   --radius-full: 9999px;
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ─── Base Reset ───────────────────────────────────────────────────────────── */
@@ -96,6 +86,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* iOS momentum scroll — smoother than default */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -105,7 +97,13 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Aurora Background ────────────────────────────────────────────────────── */
+/* ─── Aurora Background ────────────────────────────────────────────────────
+   Promoted to its own compositor layer with `transform: translateZ(0)` and
+   `will-change: transform` so it is painted ONCE and never repainted during
+   scroll or page transitions — this was the single biggest jank source.
+   contain: strict stops the browser from including it in layout/paint
+   recalculations triggered by the rest of the page.
+───────────────────────────────────────────────────────────────────────────── */
 
 body::before {
   content: '';
@@ -117,6 +115,9 @@ body::before {
     radial-gradient(ellipse 45% 35% at 50%  55%, var(--aurora-3), transparent 68%);
   pointer-events: none;
   z-index: 0;
+  transform: translateZ(0);
+  will-change: transform;
+  contain: strict;
 }
 
 /* ─── Typography ───────────────────────────────────────────────────────────── */
@@ -130,20 +131,29 @@ h1, h2, h3, h4 {
   line-height: 1.2;
 }
 
-/* ─── Glass Utility Classes ────────────────────────────────────────────────── */
+/* ─── Glass Utility Classes ────────────────────────────────────────────────
+   Reduced blur radius (16px→12px, 22px→18px) — the visual difference is
+   negligible on warm-cream backgrounds but the GPU cost of large blur
+   radii is roughly quadratic. Both promoted to their own layer so they
+   don't get recomposited when content scrolls past them.
+───────────────────────────────────────────────────────────────────────────── */
 
 .glass {
   background: var(--glass);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid var(--glass-border);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .glass-heavy {
   background: var(--glass-heavy);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
   border: 1px solid var(--glass-border-strong);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* ─── Card Base ────────────────────────────────────────────────────────────── */
@@ -211,14 +221,22 @@ h1, h2, h3, h4 {
   transform: translateZ(0);
 }
 
-/* ─── Floating Nav ─────────────────────────────────────────────────────────── */
+/* ─── Floating Nav ─────────────────────────────────────────────────────────
+   This is mounted on EVERY page and never unmounts — it's the highest-value
+   target for compositing. Isolated onto its own layer + contain:layout so
+   BottomNav's internal re-renders never trigger a layout pass on the page
+   scrolling behind it.
+───────────────────────────────────────────────────────────────────────────── */
 
 .nav-floating {
   background: var(--nav-bg);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-nav);
+  transform: translateZ(0);
+  will-change: transform;
+  contain: layout style;
 }
 
 /* ─── Animated Gradient Text ───────────────────────────────────────────────── */
@@ -252,4 +270,14 @@ h1, h2, h3, h4 {
 
 .streak-alive {
   animation: streak-pulse 2.4s ease-in-out infinite;
+}
+
+/* ─── Reduced Motion ───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

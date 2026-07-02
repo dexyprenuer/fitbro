@@ -9,13 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
         sans:    ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        /* Mirror the CSS --radius-* token scale so Tailwind classes also work */
         'xs':   '10px',
-        'sm':   '14px',  // overrides Tailwind default sm (4px) intentionally
+        'sm':   '14px',
         'md':   '18px',
         'lg':   '24px',
         'xl':   '30px',
@@ -29,6 +28,9 @@ const config: Config = {
       },
       screens: {
         'xs': '360px',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
     },
   },
