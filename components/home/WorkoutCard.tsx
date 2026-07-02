@@ -15,13 +15,13 @@ interface WorkoutCardProps {
 
 function getMuscleIconPath(title: string) {
   const t = title.toLowerCase();
-  if (t.includes('chest')) return '/illustrations/muscles/chest.svg';
-  if (t.includes('back')) return '/illustrations/muscles/back.svg';
-  if (t.includes('leg')) return '/illustrations/muscles/legs.svg';
-  if (t.includes('arm')) return '/illustrations/muscles/arms.svg';
-  if (t.includes('shoulder')) return '/illustrations/muscles/shoulders.svg';
-  if (t.includes('ab') || t.includes('core')) return '/illustrations/muscles/abs.svg';
-  return '/illustrations/muscles/full-body.svg';
+  if (t.includes('chest')) return '/illustrations/muscles/chest.jpg';
+  if (t.includes('back')) return '/illustrations/muscles/back.jpg';
+  if (t.includes('leg')) return '/illustrations/muscles/legs.jpg';
+  if (t.includes('arm')) return '/illustrations/muscles/arms.jpg';
+  if (t.includes('shoulder')) return '/illustrations/muscles/shoulders.jpg';
+  if (t.includes('ab') || t.includes('core')) return '/illustrations/muscles/abs.jpg';
+  return '/illustrations/muscles/full-body.jpg';
 }
 
 function estimateMinutes(exercises: { sets: number }[]) {

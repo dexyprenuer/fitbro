@@ -24,7 +24,7 @@ export const SessionExerciseCard = memo(function SessionExerciseCard({
   const getEffective = useSettingsStore((s) => s.getEffective);
   const { sets, reps } = getEffective(exercise.id, exercise.sets, exercise.reps);
   const isLast = index === total - 1;
-  const progress = ((index) / total) * 100; // % complete before this one
+  const progress = ((index) / total) * 100;
 
   return (
     <motion.div
@@ -44,7 +44,6 @@ export const SessionExerciseCard = memo(function SessionExerciseCard({
           Exercise {index + 1} of {total}
         </span>
 
-        {/* Dot/pill stepper */}
         <div className="flex gap-1.5 items-center">
           {Array.from({ length: total }).map((_, i) => (
             <motion.div
@@ -92,21 +91,21 @@ export const SessionExerciseCard = memo(function SessionExerciseCard({
         noPad
         className="relative overflow-hidden"
       >
-        {/* Ambient glow blob */}
+        {/* Ambient glow — much softer on cream than it was on dark */}
         <div
           className="absolute -right-12 -top-12 w-40 h-40 rounded-full pointer-events-none"
           style={{
             background: 'var(--accent-glow)',
-            filter: 'blur(36px)',
-            opacity: 0.35,
+            filter: 'blur(48px)',
+            opacity: 0.12,
           }}
         />
         <div
           className="absolute -left-8 bottom-0 w-32 h-32 rounded-full pointer-events-none"
           style={{
             background: 'var(--secondary-accent-dim)',
-            filter: 'blur(28px)',
-            opacity: 0.5,
+            filter: 'blur(40px)',
+            opacity: 0.18,
           }}
         />
 
@@ -129,13 +128,13 @@ export const SessionExerciseCard = memo(function SessionExerciseCard({
             { label: 'Sets', value: sets },
             { label: 'Reps', value: reps },
           ].map(({ label, value }, idx) => (
-            <div key={label} className="flex flex-col items-center flex-1">
+            <div key={label} className="flex flex-col items-center flex-1 relative">
               {idx === 1 && (
                 <div
                   style={{
                     position: 'absolute',
                     top: '16px',
-                    left: '50%',
+                    left: 0,
                     transform: 'translateX(-50%)',
                     width: 1,
                     height: '80%',
