@@ -6,6 +6,7 @@ import { ChevronRight, Dumbbell, User, Mail } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
 
 const LINKS = [
+  { href: '/account', icon: User, label: 'Account', sub: 'Manage your profile & preferences' },
   { href: '/settings/misc', icon: Dumbbell, label: 'Workout Settings', sub: 'Customize sets & reps' },
   { href: '/settings/contact', icon: Mail, label: 'Contact Us', sub: 'Links & info' },
 ];
@@ -70,32 +71,6 @@ export default function SettingsPage() {
               </motion.div>
             </Link>
           ))}
-
-          {/* Account placeholder */}
-          <div
-            className="p-4 flex items-center gap-4"
-            style={{
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              opacity: 0.55,
-            }}
-          >
-            <div
-              className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'var(--surface)' }}
-            >
-              <User size={19} style={{ color: 'var(--text-muted)' }} />
-            </div>
-            <div className="flex-1">
-              <p className="font-display font-semibold" style={{ color: 'var(--text-primary)' }}>
-                Account
-              </p>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                Coming in v1.1
-              </p>
-            </div>
-          </div>
         </motion.div>
       </motion.div>
     </PageTransition>

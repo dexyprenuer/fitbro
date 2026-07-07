@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum WeightUnit {
+  KG
+  LBS
+}
+
+enum HeightUnit {
+  CM
+  FT_IN
+}
+
+enum WorkoutLevel {
+  NEWBIE
+  BEGINNER
+  ELITE
+}
+
+enum FitnessGoal {
+  GAIN_MUSCLE
+  LOSE_FAT
+  MAINTAIN
+  STRENGTH
+}
+
+enum RoutineType {
+  PRESET
+  CUSTOM
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+model Profile {
+  id                String        @id @default(cuid())
+  clerkUserId       String        @unique
+  username          String        @unique
+  role              Role          @default(USER)
+
+  heightCm          Float?
+  weightKg          Float?
+  heightUnit        HeightUnit    @default(CM)
+  weightUnit        WeightUnit    @default(KG)
+  workoutLevel      WorkoutLevel?
+  fitnessGoal       FitnessGoal?
+
+  onboarded         Boolean       @default(false)
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  settings          UserSettings?
+  routines          Routine[]
+  weightLogs        WeightLog[]
+  workoutLogs       WorkoutLog[]
+  exerciseOverrides ExerciseOverride[]
+
+  @@map("profiles")
+}
+
+model UserSettings {
+  id              String   @id @default(cuid())
+  profileId       String   @unique
+  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  theme           String   @default("dark")
+  activeRoutineId String?
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  lastWorkoutDate String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model Routine {
+  id          String       @id @default(cuid())
+  profileId   String?
+  profile     Profile?     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  name        String
+  type        RoutineType
+  schedule    Json
+
+  workoutDays WorkoutDay[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("routines")
+}
+
+model WorkoutDay {
+  id          String       @id @default(cuid())
+  routineId   String
+  routine     Routine      @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  title       String
+  emoji       String       @default("")
+  order       Int          @default(0)
+
+  exercises   Exercise[]
+  workoutLogs WorkoutLog[]
+
+  @@map("workout_days")
+}
+
+model Exercise {
+  id                String             @id @default(cuid())
+  workoutDayId      String
+  workoutDay        WorkoutDay         @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+
+  name              String
+  sets              Int
+  reps              Int
+  instructions      String?
+  order             Int                @default(0)
+
+  exerciseOverrides ExerciseOverride[]
+
+  @@map("exercises")
+}
+
+model WorkoutLog {
+  id                    String        @id @default(cuid())
+  profileId             String
+  profile               Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  workoutDayId          String
+  workoutDay            WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  routineId             String
+
+  status                SessionStatus @default(ACTIVE)
+  startTimestamp        DateTime
+  endTimestamp          DateTime?
+  durationSec           Int?
+  completedDate         String?
+
+  currentExerciseIndex  Int           @default(0)
+  completedExercises    Json          @default("[]")
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([profileId, status])
+  @@index([profileId, completedDate])
+  @@map("workout_logs")
+}
+
+model WeightLog {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  weightKg  Float
+  loggedAt  DateTime @default(now())
+
+  @@index([profileId, loggedAt])
+  @@map("weight_logs")
+}
+
+model ExerciseOverride {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  customSets  Int?
+  customReps  Int?
+
+  @@unique([profileId, exerciseId])
+  @@map("exercise_overrides")
+}

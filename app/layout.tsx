@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import { HydrationProvider } from '@/components/providers/HydrationProvider';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { BottomNavWrapper } from '@/components/ui/BottomNavWrapper';
 
 export const metadata: Metadata = {
   title: 'FitBro',
@@ -23,15 +24,17 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <HydrationProvider>
-          <main className="relative z-10 min-h-dvh pb-24 gpu">
-            {children}
-          </main>
-          <BottomNav />
-        </HydrationProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body>
+          <HydrationProvider>
+            <main className="relative z-10 min-h-dvh pb-24 gpu">
+              {children}
+            </main>
+            <BottomNavWrapper />
+          </HydrationProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
