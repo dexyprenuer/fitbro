@@ -387,3 +387,49 @@ function Numpad({
     </div>
   );
 }
+
+function SelectableCard({
+  selected,
+  onClick,
+  title,
+  sub,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  title: string;
+  sub?: string;
+}) {
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="w-full text-left p-4 flex items-center gap-3"
+      style={{
+        background: 'var(--card)',
+        border: `1.5px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: selected ? 'var(--shadow-sm)' : 'none',
+      }}
+    >
+      <div className="flex-1">
+        <p className="font-display font-semibold" style={{ color: 'var(--text-primary)' }}>
+          {title}
+        </p>
+        {sub && (
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+            {sub}
+          </p>
+        )}
+      </div>
+      {selected && (
+        <div
+          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--accent)' }}
+        >
+          <Check size={14} color="#fff" strokeWidth={3} />
+        </div>
+      )}
+    </motion.button>
+  );
+}
