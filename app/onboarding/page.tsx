@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Check } from 'lucide-react';
+import { Check, Delete } from 'lucide-react';
 import type { HeightUnit, WeightUnit, WorkoutLevel, FitnessGoal } from '@prisma/client';
 
 const TOTAL_STEPS = 5;
@@ -24,6 +24,10 @@ const GOALS: { value: FitnessGoal; label: string }[] = [
   { value: 'STRENGTH', label: 'Strength' },
 ];
 
+// Max digits allowed for each numpad context (prevents absurd values like 99999)
+const WEIGHT_MAX_DIGITS = 5; // e.g. "199.5"
+const HEIGHT_MAX_DIGITS = 3; // e.g. "220"
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -31,13 +35,16 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('KG');
-  const [weightKg, setWeightKg] = useState(72.5);
+  const [weightInput, setWeightInput] = useState('72.5');
 
   const [heightUnit, setHeightUnit] = useState<HeightUnit>('CM');
-  const [heightCm, setHeightCm] = useState(175);
+  const [heightInput, setHeightInput] = useState('175');
 
   const [workoutLevel, setWorkoutLevel] = useState<WorkoutLevel | null>(null);
   const [fitnessGoal, setFitnessGoal] = useState<FitnessGoal | null>(null);
+
+  const weightKg = parseFloat(weightInput) || 0;
+  const heightCm = parseFloat(heightInput) || 0;
 
   const canContinue =
     step === 1 ? weightKg > 0 :
@@ -45,6 +52,35 @@ export default function OnboardingPage() {
     step === 3 ? workoutLevel !== null :
     step === 4 ? fitnessGoal !== null :
     true;
+
+  function handleNumpadPress(field: 'weight' | 'height', key: string) {
+    const current = field === 'weight' ? weightInput : heightInput;
+    const setValue = field === 'weight' ? setWeightInput : setHeightInput;
+    const maxDigits = field === 'weight' ? WEIGHT_MAX_DIGITS : HEIGHT_MAX_DIGITS;
+
+    if (key === 'backspace') {
+      setValue(current.slice(0, -1) || '0');
+      return;
+    }
+
+    if (key === '.') {
+      // Only weight supports decimals; only one decimal point allowed
+      if (field !== 'weight' || current.includes('.')) return;
+      setValue(current + '.');
+      return;
+    }
+
+    // Digit press
+    const digitsOnly = current.replace('.', '');
+    if (digitsOnly.length >= maxDigits) return;
+
+    // Replace leading "0" unless typing a decimal like "0.5"
+    if (current === '0') {
+      setValue(key);
+    } else {
+      setValue(current + key);
+    }
+  }
 
   async function handleFinish() {
     setSubmitting(true);
@@ -132,22 +168,16 @@ export default function OnboardingPage() {
 
                 <div className="text-center my-8">
                   <span className="font-display text-5xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                    {weightKg}
+                    {weightInput}
                   </span>
                   <span className="text-lg ml-1" style={{ color: 'var(--text-secondary)' }}>
                     {weightUnit.toLowerCase()}
                   </span>
                 </div>
 
-                <input
-                  type="range"
-                  min={30}
-                  max={200}
-                  step={0.5}
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(parseFloat(e.target.value))}
-                  className="w-full"
-                  style={{ accentColor: 'var(--accent)' }}
+                <Numpad
+                  onPress={(key) => handleNumpadPress('weight', key)}
+                  allowDecimal
                 />
               </div>
             )}
@@ -170,22 +200,16 @@ export default function OnboardingPage() {
 
                 <div className="text-center my-8">
                   <span className="font-display text-5xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                    {heightCm}
+                    {heightInput}
                   </span>
                   <span className="text-lg ml-1" style={{ color: 'var(--text-secondary)' }}>
                     cm
                   </span>
                 </div>
 
-                <input
-                  type="range"
-                  min={120}
-                  max={220}
-                  step={1}
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(parseFloat(e.target.value))}
-                  className="w-full"
-                  style={{ accentColor: 'var(--accent)' }}
+                <Numpad
+                  onPress={(key) => handleNumpadPress('height', key)}
+                  allowDecimal={false}
                 />
               </div>
             )}
@@ -316,48 +340,50 @@ function UnitToggle({
   );
 }
 
-function SelectableCard({
-  selected,
-  onClick,
-  title,
-  sub,
+function Numpad({
+  onPress,
+  allowDecimal,
 }: {
-  selected: boolean;
-  onClick: () => void;
-  title: string;
-  sub?: string;
+  onPress: (key: string) => void;
+  allowDecimal: boolean;
 }) {
+  const keys = allowDecimal
+    ? ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace']
+    : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'backspace'];
+
   return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="w-full text-left p-4 flex items-center gap-3"
-      style={{
-        background: 'var(--card)',
-        border: `1.5px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: selected ? 'var(--shadow-sm)' : 'none',
-      }}
-    >
-      <div className="flex-1">
-        <p className="font-display font-semibold" style={{ color: 'var(--text-primary)' }}>
-          {title}
-        </p>
-        {sub && (
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            {sub}
-          </p>
-        )}
-      </div>
-      {selected && (
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: 'var(--accent)' }}
-        >
-          <Check size={14} color="#fff" strokeWidth={3} />
-        </div>
-      )}
-    </motion.button>
+    <div className="grid grid-cols-3 gap-3 mt-2">
+      {keys.map((key, i) => {
+        if (key === '') {
+          return <div key={`empty-${i}`} />;
+        }
+
+        return (
+          <motion.button
+            key={key}
+            type="button"
+            whileTap={{ scale: 0.92 }}
+            onClick={() => onPress(key)}
+            className="h-16 rounded-2xl flex items-center justify-center"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            {key === 'backspace' ? (
+              <Delete size={22} style={{ color: 'var(--text-primary)' }} />
+            ) : (
+              <span
+                className="font-display text-2xl font-semibold"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {key}
+              </span>
+            )}
+          </motion.button>
+        );
+      })}
+    </div>
   );
 }

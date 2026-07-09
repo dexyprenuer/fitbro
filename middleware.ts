@@ -14,23 +14,17 @@ export default clerkMiddleware(async (auth, req) => {
     return;
   }
 
-  const { userId } = auth();
+  const { userId, sessionClaims } = auth();
   auth().protect();
 
-  // Onboarding gate: authenticated users who haven't finished onboarding get
-  // redirected there for every route except the onboarding page itself and API routes
-  // (API routes handle their own onboarded checks server-side, e.g. the onboard route itself).
+  // Onboarding gate — reads `onboarded` directly from the session token's
+  // public metadata claim (no DB/API round-trip, no navigation delay).
+  // Requires the "metadata" claim configured in Clerk Dashboard → Sessions.
   if (userId && !isOnboardingRoute(req) && !isApiRoute(req)) {
-    const profileCheckUrl = new URL('/api/profile', req.url);
-    const res = await fetch(profileCheckUrl, {
-      headers: { cookie: req.headers.get('cookie') ?? '' },
-    });
+    const onboarded = (sessionClaims?.metadata as { onboarded?: boolean } | undefined)?.onboarded;
 
-    if (res.ok) {
-      const data = await res.json();
-      if (!data.onboarded) {
-        return NextResponse.redirect(new URL('/onboarding', req.url));
-      }
+    if (!onboarded) {
+      return NextResponse.redirect(new URL('/onboarding', req.url));
     }
   }
 });

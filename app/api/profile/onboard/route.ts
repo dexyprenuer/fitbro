@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, currentUser, clerkClient } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueUsername } from '@/lib/username';
 import {
@@ -81,6 +81,13 @@ export async function POST(req: Request) {
     where: { profileId: profile.id },
     update: {},
     create: { profileId: profile.id },
+  });
+
+  // Write onboarded flag to Clerk's public metadata so middleware can read it
+  // synchronously from the session token — this is what eliminates the
+  // per-navigation DB round-trip that was causing the button delay.
+  await clerkClient.users.updateUserMetadata(userId, {
+    publicMetadata: { onboarded: true },
   });
 
   return NextResponse.json({ profile });

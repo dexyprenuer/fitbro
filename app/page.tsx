@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell } from 'lucide-react';
+import { User } from 'lucide-react';
 import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TodayCard } from '@/components/home/TodayCard';
@@ -38,8 +38,27 @@ function getProgressMessage(pct: number) {
 export default function HomePage() {
   const activeRoutine = useRoutineStore((s) => s.activeRoutine);
   const completedDates = useAppStore((s) => s.completedDates);
-  const displayName = useAppStore((s) => s.displayName);
+  const fallbackDisplayName = useAppStore((s) => s.displayName);
   const routine = activeRoutine();
+
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/profile')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.profile?.username) {
+          setUsername(data.profile.username);
+        }
+      })
+      .catch(() => {
+        // silently fall back to local displayName
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const { scheduledThisWeek, completedThisWeek, weeklyProgress } = useMemo(() => {
     const today = new Date();
@@ -76,19 +95,16 @@ export default function HomePage() {
               className="font-display text-3xl font-bold"
               style={{ color: 'var(--text-primary)' }}
             >
-              {displayName}
+              {username ?? fallbackDisplayName}
             </h1>
           </div>
-          <div
+          <Link
+            href="/account"
             className="w-11 h-11 rounded-full flex items-center justify-center relative flex-shrink-0"
             style={{ background: 'var(--card)', boxShadow: 'var(--shadow-sm)' }}
           >
-            <Bell size={19} style={{ color: 'var(--text-primary)' }} />
-            <span
-              className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full"
-              style={{ background: 'var(--accent)' }}
-            />
-          </div>
+            <User size={19} style={{ color: 'var(--text-primary)' }} />
+          </Link>
         </motion.div>
 
         {/* Today */}
