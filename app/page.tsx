@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TodayCard } from '@/components/home/TodayCard';
 import { WorkoutCard } from '@/components/home/WorkoutCard';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+import { WeeklySchedule } from '@/components/home/WeeklySchedule';
+import { WeightProgressCard } from '@/components/home/WeightProgressCard';
 import { useRoutineStore } from '@/store/useRoutineStore';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -28,20 +29,13 @@ function getGreeting() {
   return 'Good evening,';
 }
 
-function getProgressMessage(pct: number) {
-  if (pct >= 100) return "Amazing! You've hit your weekly goal.";
-  if (pct >= 50) return "Keep going! You're building consistency.";
-  if (pct > 0) return 'Nice start — keep the momentum going.';
-  return "Let's get your first workout in today.";
-}
-
 export default function HomePage() {
   const activeRoutine = useRoutineStore((s) => s.activeRoutine);
-  const completedDates = useAppStore((s) => s.completedDates);
   const fallbackDisplayName = useAppStore((s) => s.displayName);
   const routine = activeRoutine();
 
   const [username, setUsername] = useState<string | null>(null);
+  const [weightUnit, setWeightUnit] = useState<'KG' | 'LBS'>('KG');
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +45,9 @@ export default function HomePage() {
         if (!cancelled && data?.profile?.username) {
           setUsername(data.profile.username);
         }
+        if (!cancelled && data?.profile?.weightUnit) {
+          setWeightUnit(data.profile.weightUnit);
+        }
       })
       .catch(() => {
         // silently fall back to local displayName
@@ -59,22 +56,6 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
-
-  const { scheduledThisWeek, completedThisWeek, weeklyProgress } = useMemo(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const scheduled = routine.schedule.slice(0, dayOfWeek + 1).filter(Boolean).length;
-    const completed = completedDates.filter((d) => {
-      const date = new Date(d);
-      const diff = (today.getTime() - date.getTime()) / 86400000;
-      return diff >= 0 && diff < 7;
-    }).length;
-    return {
-      scheduledThisWeek: scheduled,
-      completedThisWeek: completed,
-      weeklyProgress: scheduled > 0 ? Math.min(100, (completed / scheduled) * 100) : 0,
-    };
-  }, [completedDates, routine.schedule]);
 
   return (
     <PageTransition>
@@ -112,39 +93,14 @@ export default function HomePage() {
           <TodayCard />
         </motion.div>
 
-        {/* Weekly Progress */}
-        <motion.div
-          variants={fadeUp}
-          className="mb-6 p-5"
-          style={{
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="font-display font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
-                Weekly Progress
-              </p>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                {completedThisWeek} / {scheduledThisWeek} workouts
-              </p>
-            </div>
-            <span
-              className="font-display font-bold tabular-nums"
-              style={{ fontSize: '1.7rem', color: 'var(--text-primary)' }}
-            >
-              {Math.round(weeklyProgress)}%
-            </span>
-          </div>
+        {/* Weekly Progress — redesigned schedule tracker */}
+        <motion.div variants={fadeUp}>
+          <WeeklySchedule />
+        </motion.div>
 
-          <ProgressBar value={weeklyProgress} segments={Math.max(scheduledThisWeek, 1)} />
-
-          <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}>
-            {getProgressMessage(weeklyProgress)}
-          </p>
+        {/* Weight Progress */}
+        <motion.div variants={fadeUp}>
+          <WeightProgressCard weightUnit={weightUnit} />
         </motion.div>
 
         {/* Your Workouts */}

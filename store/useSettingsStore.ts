@@ -6,6 +6,8 @@ interface SettingsStore extends WorkoutSettings {
   getEffective: (exerciseId: string, defaultSets: number, defaultReps: number) => { sets: number; reps: number };
   setOverride: (override: ExerciseOverride) => void;
   removeOverride: (exerciseId: string) => void;
+  resetGroup: (exerciseIds: string[]) => void;
+  resetAll: () => void;
   hydrate: () => void;
 }
 
@@ -36,5 +38,17 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     delete next[exerciseId];
     set({ overrides: next });
     storage.set('workoutSettings', { overrides: next });
+  },
+
+  resetGroup(exerciseIds) {
+    const next = { ...get().overrides };
+    exerciseIds.forEach((id) => delete next[id]);
+    set({ overrides: next });
+    storage.set('workoutSettings', { overrides: next });
+  },
+
+  resetAll() {
+    set({ overrides: {} });
+    storage.set('workoutSettings', { overrides: {} });
   },
 }));

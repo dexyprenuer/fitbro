@@ -2,26 +2,33 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Dumbbell, User, Mail } from 'lucide-react';
+import { ChevronRight, Dumbbell, User, Mail, Ruler, Bell, Info, LogOut, Palette } from 'lucide-react';
+import { useClerk } from '@clerk/nextjs';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { ThemeToggle } from '@/components/settings/ThemeToggle';
 
 const LINKS = [
   { href: '/account', icon: User, label: 'Account', sub: 'Manage your profile & preferences' },
   { href: '/settings/misc', icon: Dumbbell, label: 'Workout Settings', sub: 'Customize sets & reps' },
+  { href: '/settings/units', icon: Ruler, label: 'Units', sub: 'Weight & height display' },
+  { href: '/settings/notifications', icon: Bell, label: 'Notifications', sub: 'Manage alerts' },
   { href: '/settings/contact', icon: Mail, label: 'Contact Us', sub: 'Links & info' },
+  { href: '/settings/about', icon: Info, label: 'About', sub: 'App version & info' },
 ];
 
 const stagger = {
   hidden: {},
-  show:   { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
 };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export default function SettingsPage() {
+  const { signOut } = useClerk();
+
   return (
     <PageTransition>
       <motion.div
@@ -38,6 +45,10 @@ export default function SettingsPage() {
         >
           Settings
         </motion.h1>
+
+        <motion.div variants={fadeUp} className="mb-3">
+          <ThemeToggle />
+        </motion.div>
 
         <motion.div variants={fadeUp} className="space-y-3">
           {LINKS.map(({ href, icon: Icon, label, sub }) => (
@@ -72,6 +83,28 @@ export default function SettingsPage() {
             </Link>
           ))}
         </motion.div>
+
+        <motion.button
+          variants={fadeUp}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => signOut({ redirectUrl: '/sign-in' })}
+          className="w-full mt-6 p-4 flex items-center gap-4"
+          style={{
+            background: 'var(--destructive-dim)',
+            border: '1px solid rgba(248,113,113,0.22)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+        >
+          <div
+            className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(248,113,113,0.15)' }}
+          >
+            <LogOut size={19} style={{ color: 'var(--destructive)' }} />
+          </div>
+          <span className="font-display font-semibold" style={{ color: 'var(--destructive)' }}>
+            Log Out
+          </span>
+        </motion.button>
       </motion.div>
     </PageTransition>
   );
