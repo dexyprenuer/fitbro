@@ -25,8 +25,16 @@ export async function POST(req: Request) {
   }
 
   const existing = await prisma.profile.findUnique({ where: { clerkUserId: userId } });
+
+  // Self-healing case: profile was already onboarded in the DB (e.g. from
+  // before the Clerk publicMetadata flag existed), but the session token
+  // is missing the flag, causing the middleware to redirect here in a loop.
+  // Just resync the metadata and let the client proceed instead of erroring.
   if (existing?.onboarded) {
-    return NextResponse.json({ error: 'Already onboarded' }, { status: 409 });
+    await clerkClient.users.updateUserMetadata(userId, {
+      publicMetadata: { onboarded: true },
+    });
+    return NextResponse.json({ profile: existing, resynced: true });
   }
 
   let body: OnboardBody;
