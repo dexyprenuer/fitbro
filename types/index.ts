@@ -28,7 +28,7 @@ export type WorkoutDay = {
 export type Routine = {
   id: string;
   name: string;
-  type: 'preset' | 'custom';
+  type: 'PRESET' | 'CUSTOM';
   schedule: (string | null)[];
   workoutDays: WorkoutDay[];
 };
