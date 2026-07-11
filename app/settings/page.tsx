@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Dumbbell, User, Mail, Ruler, Bell, Info, LogOut, Palette } from 'lucide-react';
+import { ChevronRight, Dumbbell, User, Mail, Ruler, Bell, Info, LogOut } from 'lucide-react';
 import { useClerk } from '@clerk/nextjs';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { ThemeToggle } from '@/components/settings/ThemeToggle';
 
 const LINKS = [
   { href: '/account', icon: User, label: 'Account', sub: 'Manage your profile & preferences' },
@@ -45,10 +44,6 @@ export default function SettingsPage() {
         >
           Settings
         </motion.h1>
-
-        <motion.div variants={fadeUp} className="mb-3">
-          <ThemeToggle />
-        </motion.div>
 
         <motion.div variants={fadeUp} className="space-y-3">
           {LINKS.map(({ href, icon: Icon, label, sub }) => (

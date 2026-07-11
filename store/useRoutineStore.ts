@@ -1,44 +1,69 @@
 import { create } from 'zustand';
-import { storage } from '@/lib/storage';
-import { PRESET_ROUTINES, DEFAULT_ROUTINE_ID } from '@/data/presets';
 import type { Routine, WorkoutDay } from '@/types';
 import { getDay } from 'date-fns';
 
+const FALLBACK_ROUTINE: Routine = {
+  id: '__loading__',
+  name: 'Loading…',
+  type: 'PRESET',
+  schedule: [null, null, null, null, null, null, null],
+  workoutDays: [],
+} as unknown as Routine;
+
 interface RoutineStore {
-  activeRoutineId: string;
-  customRoutines: Routine[];
+  routines: Routine[];
+  activeRoutineId: string | null;
+  loading: boolean;
+  loaded: boolean;
   allRoutines: () => Routine[];
   activeRoutine: () => Routine;
   todaysWorkoutDay: () => WorkoutDay | null;
   workoutDayById: (id: string) => WorkoutDay | undefined;
   setActiveRoutine: (id: string) => void;
-  saveCustomRoutine: (routine: Routine) => void;
-  hydrate: () => void;
+  saveCustomRoutine: (payload: {
+    name: string;
+    workoutDays: { title: string; emoji?: string; exercises: { name: string; sets: number; reps: number; instructions?: string }[] }[];
+  }) => Promise<void>;
+  hydrate: () => Promise<void>;
 }
 
 export const useRoutineStore = create<RoutineStore>((set, get) => ({
-  activeRoutineId: DEFAULT_ROUTINE_ID,
-  customRoutines: [],
+  routines: [],
+  activeRoutineId: null,
+  loading: false,
+  loaded: false,
 
-  hydrate() {
-    const activeRoutineId = storage.get<string>('activeRoutineId', DEFAULT_ROUTINE_ID);
-    const customRoutines = storage.get<Routine[]>('customRoutines', []);
-    set({ activeRoutineId, customRoutines });
+  async hydrate() {
+    set({ loading: true });
+    try {
+      const res = await fetch('/api/routines');
+      if (!res.ok) throw new Error('Failed to load routines');
+      const data = await res.json();
+      set({
+        routines: data.routines,
+        activeRoutineId: data.activeRoutineId ?? data.routines[0]?.id ?? null,
+        loading: false,
+        loaded: true,
+      });
+    } catch {
+      set({ loading: false, loaded: true });
+    }
   },
 
   allRoutines() {
-    return [...PRESET_ROUTINES, ...get().customRoutines];
+    return get().routines;
   },
 
   activeRoutine() {
-    const all = get().allRoutines();
+    const all = get().routines;
+    if (all.length === 0) return FALLBACK_ROUTINE;
     return all.find((r) => r.id === get().activeRoutineId) ?? all[0];
   },
 
   todaysWorkoutDay() {
     const routine = get().activeRoutine();
     const dayOfWeek = getDay(new Date()); // 0=Sun
-    const dayId = routine.schedule[dayOfWeek];
+    const dayId = (routine.schedule as (string | null)[])[dayOfWeek];
     if (!dayId) return null;
     return routine.workoutDays.find((d) => d.id === dayId) ?? null;
   },
@@ -48,18 +73,24 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   },
 
   setActiveRoutine(id) {
-    set({ activeRoutineId: id });
-    storage.set('activeRoutineId', id);
+    const prev = get().activeRoutineId;
+    set({ activeRoutineId: id }); // optimistic
+    fetch('/api/settings/active-routine', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ routineId: id }),
+    }).catch(() => set({ activeRoutineId: prev })); // rollback on failure
   },
 
-  saveCustomRoutine(routine) {
-    const existing = get().customRoutines;
-    const idx = existing.findIndex((r) => r.id === routine.id);
-    const next =
-      idx >= 0
-        ? existing.map((r) => (r.id === routine.id ? routine : r))
-        : [...existing, routine];
-    set({ customRoutines: next });
-    storage.set('customRoutines', next);
+  async saveCustomRoutine(payload) {
+    const res = await fetch('/api/routines', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const { routine } = await res.json();
+      set((state) => ({ routines: [...state.routines, routine] }));
+    }
   },
 }));

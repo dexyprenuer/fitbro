@@ -3,11 +3,13 @@
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useRoutineStore } from '@/store/useRoutineStore';
-import { PRESET_ROUTINES } from '@/data/presets';
 
 export function RoutineSelector() {
-  const { activeRoutineId, setActiveRoutine, customRoutines } = useRoutineStore();
-  const all = [...PRESET_ROUTINES, ...customRoutines];
+  const allRoutines      = useRoutineStore((s) => s.allRoutines);
+  const activeRoutineId  = useRoutineStore((s) => s.activeRoutineId);
+  const setActiveRoutine = useRoutineStore((s) => s.setActiveRoutine);
+
+  const all = allRoutines();
 
   return (
     <div className="space-y-3">
@@ -42,7 +44,7 @@ export function RoutineSelector() {
                     fontWeight: active ? 600 : 500,
                   }}
                 >
-                  {active ? 'Current' : routine.type === 'preset' ? 'Preset' : 'Custom'}
+                  {active ? 'Current' : routine.type === 'PRESET' ? 'Preset' : 'Custom'}
                 </span>
                 {' · '}
                 {routine.workoutDays.length} workout days

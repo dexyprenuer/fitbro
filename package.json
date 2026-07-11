@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.7.5",
-    "@prisma/client": "^7.8.0",
     "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^10.16.0",
@@ -33,6 +33,7 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@clerk/backend": "^3.11.3",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.11.0",
     "@types/react": "^18.2.0",

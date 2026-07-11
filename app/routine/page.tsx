@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarDays, Repeat } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { RoutineCalendar } from '@/components/routine/RoutineCalendar';
 import { RoutineSelector } from '@/components/routine/RoutineSelector';
 import { useRoutineStore } from '@/store/useRoutineStore';
+import { useRealtimeTable } from '@/hooks/useRealtimeTable';
 
 const stagger = {
   hidden: {},
@@ -19,7 +21,29 @@ const fadeUp = {
 
 export default function RoutinePage() {
   const activeRoutine = useRoutineStore((s) => s.activeRoutine);
+  const hydrate       = useRoutineStore((s) => s.hydrate);
+  const loading       = useRoutineStore((s) => s.loading);
+  const loaded        = useRoutineStore((s) => s.loaded);
   const routine       = activeRoutine();
+
+  useEffect(() => {
+    if (!loaded) hydrate();
+  }, [loaded, hydrate]);
+
+  // Admin edits to presets (or their days/exercises) refresh this page live.
+  useRealtimeTable('routines', () => hydrate());
+  useRealtimeTable('workout_days', () => hydrate());
+  useRealtimeTable('exercises', () => hydrate());
+
+  if (loading && !loaded) {
+    return (
+      <PageTransition>
+        <div className="px-4 pt-12 max-w-lg mx-auto">
+          <p style={{ color: 'var(--text-secondary)' }}>Loading your routine…</p>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
