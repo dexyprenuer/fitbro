@@ -1,6 +1,6 @@
 // hooks/useRealtimeTable.ts
 import { useEffect, useRef } from 'react';
-import { supabaseRealtime } from '@/lib/supabase';
+import { getSupabaseRealtime } from '@/lib/supabase';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 /**
@@ -16,7 +16,10 @@ export function useRealtimeTable(
   onChangeRef.current = onChange;
 
   useEffect(() => {
-    const channel = supabaseRealtime
+    // Only runs in browser (useEffect is client-side by default)
+    const supabase = getSupabaseRealtime();
+    
+    const channel = supabase
       .channel(`realtime:${table}:${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
@@ -26,7 +29,7 @@ export function useRealtimeTable(
       .subscribe();
 
     return () => {
-      supabaseRealtime.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [table]);
 }
