@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Plus, Copy, Trash2, ChevronRight } from 'lucide-react';
+import { PresetWizard } from '@/components/admin/PresetWizard';
 
 interface PresetSummary {
   id: string;
@@ -14,8 +15,7 @@ interface PresetSummary {
 export default function AdminPresetsPage() {
   const [presets, setPresets] = useState<PresetSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
@@ -29,22 +29,6 @@ export default function AdminPresetsPage() {
   useEffect(() => {
     load();
   }, []);
-
-  async function createPreset() {
-    if (!newName.trim()) return;
-    setBusyId('new');
-    const res = await fetch('/api/admin/presets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim() }),
-    });
-    if (res.ok) {
-      setNewName('');
-      setCreating(false);
-      await load();
-    }
-    setBusyId(null);
-  }
 
   async function duplicatePreset(id: string) {
     setBusyId(id);
@@ -69,38 +53,13 @@ export default function AdminPresetsPage() {
           <p className="text-sm text-[var(--text-secondary)]">{presets.length} preset routines</p>
         </div>
         <button
-          onClick={() => setCreating((v) => !v)}
+          onClick={() => setWizardOpen(true)}
           className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
           style={{ background: 'var(--accent)', color: 'white' }}
         >
           <Plus size={15} /> New Preset
         </button>
       </div>
-
-      {creating && (
-        <div
-          className="flex items-center gap-2 rounded-[var(--radius-lg)] p-4"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
-        >
-          <input
-            autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && createPreset()}
-            placeholder="Preset name (e.g. 6-Day Bro Split)"
-            className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
-            style={{ background: 'var(--bg-secondary)' }}
-          />
-          <button
-            disabled={busyId === 'new'}
-            onClick={createPreset}
-            className="rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50"
-            style={{ background: 'var(--accent)', color: 'white' }}
-          >
-            Create
-          </button>
-        </div>
-      )}
 
       <div
         className="divide-y divide-[var(--border)] rounded-[var(--radius-lg)]"
@@ -145,6 +104,8 @@ export default function AdminPresetsPage() {
           );
         })}
       </div>
+
+      <PresetWizard open={wizardOpen} onClose={() => setWizardOpen(false)} onCreated={load} />
     </motion.div>
   );
 }

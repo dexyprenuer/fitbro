@@ -1,0 +1,325 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: app/admin/analytics/page.tsx, app/admin/users/page.tsx
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  admin/
+    analytics/
+      page.tsx
+    users/
+      page.tsx
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/admin/analytics/page.tsx">
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useRealtimeTable } from '@/hooks/useRealtimeTable';
+
+interface AnalyticsData {
+  daily: number;
+  weekly: number;
+  monthly: number;
+  topRoutines: { name: string; count: number }[];
+  trend: { date: string; count: number }[];
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div
+      className="rounded-[var(--radius-lg)] p-5"
+      style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+    >
+      <p className="text-sm text-[var(--text-secondary)]">{label}</p>
+      <p className="mt-1 text-3xl font-semibold text-[var(--text-primary)]">{value}</p>
+    </div>
+  );
+}
+
+function TrendChart({ trend }: { trend: { date: string; count: number }[] }) {
+  const max = Math.max(1, ...trend.map((t) => t.count));
+  return (
+    <div className="flex h-32 items-end gap-1.5">
+      {trend.map((t) => {
+        const heightPct = (t.count / max) * 100;
+        const label = new Date(t.date).toLocaleDateString(undefined, { weekday: 'narrow' });
+        return (
+          <div key={t.date} className="flex flex-1 flex-col items-center gap-1">
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: `${Math.max(heightPct, t.count > 0 ? 6 : 2)}%` }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full rounded-t-md"
+              style={{
+                background: t.count > 0 ? 'var(--accent)' : 'var(--bg-tertiary)',
+                minHeight: 4,
+                alignSelf: 'flex-end',
+              }}
+              title={`${t.date}: ${t.count}`}
+            />
+            <span className="text-[10px] text-[var(--text-muted)]">{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function AdminAnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  function load() {
+    fetch('/api/admin/analytics')
+      .then((res) => res.json())
+      .then(setData)
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  useRealtimeTable('workout_logs', () => load());
+
+  if (loading || !data) {
+    return <p className="text-[var(--text-secondary)]">Loading analytics…</p>;
+  }
+
+  const maxRoutineCount = Math.max(1, ...data.topRoutines.map((r) => r.count));
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Analytics</h1>
+        <p className="text-sm text-[var(--text-secondary)]">Workout activity across all users</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard label="Today" value={data.daily} />
+        <StatCard label="This Week" value={data.weekly} />
+        <StatCard label="This Month" value={data.monthly} />
+      </div>
+
+      <div
+        className="rounded-[var(--radius-lg)] p-5"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <p className="mb-4 text-sm font-medium text-[var(--text-secondary)]">Last 14 Days</p>
+        <TrendChart trend={data.trend} />
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Most Used Routines</h2>
+        <div
+          className="space-y-3 rounded-[var(--radius-lg)] p-5"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+        >
+          {data.topRoutines.length === 0 && (
+            <p className="text-sm text-[var(--text-secondary)]">No completed workouts in the last 30 days.</p>
+          )}
+          {data.topRoutines.map((routine) => (
+            <div key={routine.name}>
+              <div className="mb-1 flex items-center justify-between">
+                <p className="text-sm font-medium text-[var(--text-primary)]">{routine.name}</p>
+                <p className="text-xs text-[var(--text-secondary)]">{routine.count} sessions</p>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full" style={{ background: 'var(--bg-tertiary)' }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(routine.count / maxRoutineCount) * 100}%` }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="h-full rounded-full"
+                  style={{ background: 'var(--accent)' }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+</file>
+
+<file path="app/admin/users/page.tsx">
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Search, ShieldCheck, Shield, Trash2 } from 'lucide-react';
+
+interface AdminUser {
+  id: string;
+  clerkUserId: string;
+  username: string;
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+  createdAt: string;
+  workoutLevel: string | null;
+  fitnessGoal: string | null;
+  _count: { workoutLogs: number };
+}
+
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = useCallback(async (query: string) => {
+    setLoading(true);
+    const res = await fetch(`/api/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+    const data = await res.json();
+    setUsers(data.users ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load('');
+  }, [load]);
+
+  useEffect(() => {
+    const t = setTimeout(() => load(q), 300);
+    return () => clearTimeout(t);
+  }, [q, load]);
+
+  async function changeRole(user: AdminUser, role: AdminUser['role']) {
+    setBusyId(user.id);
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (res.ok) {
+      const { profile } = await res.json();
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role: profile.role } : u)));
+    }
+    setBusyId(null);
+  }
+
+  async function deleteUser(user: AdminUser) {
+    if (!confirm(`Delete ${user.username}? This cannot be undone.`)) return;
+    setBusyId(user.id);
+    const res = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    }
+    setBusyId(null);
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Users</h1>
+        <p className="text-sm text-[var(--text-secondary)]">{users.length} shown</p>
+      </div>
+
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by username..."
+          className="w-full rounded-[var(--radius-lg)] py-2.5 pl-9 pr-4 text-sm outline-none"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+        />
+      </div>
+
+      <div
+        className="divide-y divide-[var(--border)] rounded-[var(--radius-lg)]"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        {loading && <p className="p-5 text-sm text-[var(--text-secondary)]">Loading…</p>}
+        {!loading && users.length === 0 && (
+          <p className="p-5 text-sm text-[var(--text-secondary)]">No users found.</p>
+        )}
+        {users.map((user) => (
+          <div key={user.id} className="flex items-center justify-between gap-4 p-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)]">{user.username}</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                {user.role} · {user._count.workoutLogs} workouts logged
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {user.role !== 'ADMIN' && (
+                <button
+                  disabled={busyId === user.id}
+                  onClick={() => changeRole(user, 'ADMIN')}
+                  className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                  style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
+                >
+                  <ShieldCheck size={13} /> Make Admin
+                </button>
+              )}
+              {user.role !== 'USER' && (
+                <button
+                  disabled={busyId === user.id}
+                  onClick={() => changeRole(user, 'USER')}
+                  className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                  style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                >
+                  <Shield size={13} /> Demote
+                </button>
+              )}
+              <button
+                disabled={busyId === user.id}
+                onClick={() => deleteUser(user)}
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+</file>
+
+</files>

@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin, AdminAuthError } from '@/lib/auth';
 
+const VALID_MUSCLE_GROUPS = [
+  'Chest', 'Back', 'Legs', 'Biceps', 'Triceps',
+  'Forearms', 'Shoulders', 'Abs', 'Neck',
+];
+
 export async function GET() {
   try {
     await requireAdmin();
@@ -27,11 +32,28 @@ export async function GET() {
   return NextResponse.json({ presets });
 }
 
-interface CreatePresetBody {
-  name?: string;
+interface WizardExercise {
+  name: string;
+  sets: number;
+  reps: number;
+  instructions?: string;
 }
 
-// Creates an empty preset shell. Workout days/exercises added separately.
+interface WizardDay {
+  title: string;
+  emoji?: string;
+  muscleGroups?: string[];
+  exercises: WizardExercise[];
+}
+
+interface CreatePresetBody {
+  name?: string;
+  workoutDays?: WizardDay[];
+}
+
+// Bulk-creates a preset with nested days + exercises in one call (used by the
+// multi-step wizard). Still supports the old "name only" shell-creation shape
+// for backwards compatibility with anything else that might call this.
 export async function POST(req: Request) {
   try {
     await requireAdmin();
@@ -53,6 +75,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   }
 
+  // Wizard path: full nested payload
+  if (body.workoutDays && body.workoutDays.length > 0) {
+    const preset = await prisma.routine.create({
+      data: {
+        name: body.name.trim(),
+        type: 'PRESET',
+        profileId: null,
+        schedule: [null, null, null, null, null, null, null],
+        workoutDays: {
+          create: body.workoutDays.map((day, dayIdx) => ({
+            title: day.title.trim(),
+            emoji: day.emoji ?? '',
+            order: dayIdx,
+            muscleGroups: (day.muscleGroups ?? []).filter((m) => VALID_MUSCLE_GROUPS.includes(m)),
+            exercises: {
+              create: day.exercises.map((ex, exIdx) => ({
+                name: ex.name.trim(),
+                sets: ex.sets,
+                reps: ex.reps,
+                instructions: ex.instructions?.trim() || null,
+                order: exIdx,
+              })),
+            },
+          })),
+        },
+      },
+      include: { workoutDays: { include: { exercises: true } } },
+    });
+
+    return NextResponse.json({ preset });
+  }
+
+  // Legacy path: empty shell, days added one at a time afterward
   const preset = await prisma.routine.create({
     data: {
       name: body.name.trim(),

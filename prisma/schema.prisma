@@ -176,6 +176,22 @@ model WeightLog {
   @@map("weight_logs")
 }
 
+model WorkoutDay {
+  id           String       @id @default(cuid())
+  routineId    String
+  routine      Routine      @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  title        String
+  emoji        String       @default("")
+  order        Int          @default(0)
+  muscleGroups String[]     @default([])
+
+  exercises    Exercise[]
+  workoutLogs  WorkoutLog[]
+
+  @@map("workout_days")
+}
+
 model ExerciseOverride {
   id          String   @id @default(cuid())
   profileId   String

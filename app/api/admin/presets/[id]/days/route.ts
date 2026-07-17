@@ -3,9 +3,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin, AdminAuthError } from '@/lib/auth';
 
+const VALID_MUSCLE_GROUPS = [
+  'Chest', 'Back', 'Legs', 'Biceps', 'Triceps',
+  'Forearms', 'Shoulders', 'Abs', 'Neck',
+];
+
 interface CreateDayBody {
   title?: string;
   emoji?: string;
+  muscleGroups?: string[];
 }
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -29,6 +35,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   }
 
+  const muscleGroups = (body.muscleGroups ?? []).filter((m) => VALID_MUSCLE_GROUPS.includes(m));
+
   const count = await prisma.workoutDay.count({ where: { routineId: params.id } });
 
   const day = await prisma.workoutDay.create({
@@ -37,6 +45,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       title: body.title.trim(),
       emoji: body.emoji ?? '',
       order: count,
+      muscleGroups,
     },
     include: { exercises: true },
   });
