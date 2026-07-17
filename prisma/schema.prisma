@@ -108,16 +108,17 @@ model Routine {
 }
 
 model WorkoutDay {
-  id          String       @id @default(cuid())
-  routineId   String
-  routine     Routine      @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  id           String       @id @default(cuid())
+  routineId    String
+  routine      Routine      @relation(fields: [routineId], references: [id], onDelete: Cascade)
 
-  title       String
-  emoji       String       @default("")
-  order       Int          @default(0)
+  title        String
+  emoji        String       @default("")
+  order        Int          @default(0)
+  muscleGroups String[]     @default([])
 
-  exercises   Exercise[]
-  workoutLogs WorkoutLog[]
+  exercises    Exercise[]
+  workoutLogs  WorkoutLog[]
 
   @@map("workout_days")
 }
@@ -174,22 +175,6 @@ model WeightLog {
 
   @@index([profileId, loggedAt])
   @@map("weight_logs")
-}
-
-model WorkoutDay {
-  id           String       @id @default(cuid())
-  routineId    String
-  routine      Routine      @relation(fields: [routineId], references: [id], onDelete: Cascade)
-
-  title        String
-  emoji        String       @default("")
-  order        Int          @default(0)
-  muscleGroups String[]     @default([])
-
-  exercises    Exercise[]
-  workoutLogs  WorkoutLog[]
-
-  @@map("workout_days")
 }
 
 model ExerciseOverride {
