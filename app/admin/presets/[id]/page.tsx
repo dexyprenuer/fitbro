@@ -144,7 +144,6 @@ export default function AdminPresetDetailPage() {
   }
 
   async function updateMuscleGroups(dayId: string, muscleGroups: string[]) {
-    // optimistic
     setPreset((prev) => {
       if (!prev) return prev;
       return {
@@ -236,7 +235,7 @@ export default function AdminPresetDetailPage() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setOpenDayId(isOpen ? null : day.id)}
-                  className="flex items-center gap-1.5"
+                  className="flex flex-1 items-center gap-1.5"
                 >
                   <p className="font-semibold text-[var(--text-primary)]">{day.title}</p>
                   <span className="text-xs text-[var(--text-secondary)]">({day.exercises.length})</span>
@@ -253,17 +252,15 @@ export default function AdminPresetDetailPage() {
                 </button>
               </div>
 
-              {/* Muscle group chips + edit trigger */}
+              {/* Muscle group chips — tap anywhere in this row to edit */}
               <button
                 onClick={() => setPickerDayId(day.id)}
-                className="mt-2 flex flex-wrap items-center gap-1.5"
+                className="mt-1.5 flex w-full flex-wrap items-center gap-1.5 text-left"
               >
+                <Dumbbell size={11} style={{ color: 'var(--text-muted)' }} />
                 {day.muscleGroups.length === 0 ? (
-                  <span
-                    className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}
-                  >
-                    <Dumbbell size={11} /> Set muscle groups
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                    Tap to set muscle groups
                   </span>
                 ) : (
                   day.muscleGroups.map((m) => (

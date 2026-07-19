@@ -10,6 +10,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
  * - /sign-in/* (auth)
  * - /sign-up/* (auth)
  * - /onboarding (pre-app)
+ * - /admin/* (admin panel has its own nav)
  * 
  * BottomNav SHOULD appear on:
  * - / (home)
@@ -22,7 +23,7 @@ export function BottomNavWrapper() {
   const pathname = usePathname();
 
   // Routes where BottomNav should NOT appear
-  const hideNavRoutes = ['/sign-in', '/sign-up', '/onboarding'];
+  const hideNavRoutes = ['/sign-in', '/sign-up', '/onboarding', '/admin'];
   const shouldHideNav = hideNavRoutes.some((route) => pathname.startsWith(route));
 
   if (shouldHideNav) {
