@@ -6,7 +6,7 @@ export type AppState = {
   longestStreak: number;
   lastWorkoutDate: string | null;
   completedDates: string[];
-  completedWorkoutIds: string[]; // Tracks specific unique session completions per day
+  completedWorkoutIds: string[];
   displayName: string;
 };
 
@@ -22,6 +22,7 @@ export type WorkoutDay = {
   id: string;
   title: string;
   emoji: string;
+  muscleGroups?: string[];
   exercises: Exercise[];
 };
 

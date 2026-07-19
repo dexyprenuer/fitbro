@@ -1,3 +1,330 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: components/exercise/CompletionOverlay.tsx, store/useSessionStore.ts, app/exercise/[dayId]/page.tsx
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  exercise/
+    [dayId]/
+      page.tsx
+components/
+  exercise/
+    CompletionOverlay.tsx
+store/
+  useSessionStore.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="store/useSessionStore.ts">
+import { create } from 'zustand';
+import { storage } from '@/lib/storage';
+import { todayString } from '@/lib/streak';
+import { getElapsedSeconds } from '@/lib/timer';
+import type { WorkoutSession } from '@/types';
+
+interface SessionStore {
+  session: WorkoutSession | null;
+  startSession: (workoutDayId: string, routineId: string) => void;
+  completeExercise: () => void;
+  endSession: () => WorkoutSession | null;
+  abandonSession: () => void;
+  hydrate: () => void;
+}
+
+function newId() {
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+export const useSessionStore = create<SessionStore>((set, get) => ({
+  session: null,
+
+  hydrate() {
+    const session = storage.get<WorkoutSession | null>('activeSession', null);
+    if (session?.isActive) {
+      set({ session });
+    }
+  },
+
+  startSession(workoutDayId, routineId) {
+    const session: WorkoutSession = {
+      id: newId(),
+      workoutDayId,
+      routineId,
+      startTimestamp: Date.now(),
+      completedExercises: [],
+      currentExerciseIndex: 0,
+      isActive: true,
+    };
+    set({ session });
+    storage.set('activeSession', session);
+  },
+
+  completeExercise() {
+    const { session } = get();
+    if (!session) return;
+    const updated: WorkoutSession = {
+      ...session,
+      completedExercises: [
+        ...session.completedExercises,
+        { exerciseId: `ex-${session.currentExerciseIndex}`, completedAt: Date.now() },
+      ],
+      currentExerciseIndex: session.currentExerciseIndex + 1,
+    };
+    set({ session: updated });
+    storage.set('activeSession', updated);
+  },
+
+  endSession() {
+    const { session } = get();
+    if (!session) return null;
+    const duration = getElapsedSeconds(session.startTimestamp);
+    const finished: WorkoutSession = {
+      ...session,
+      endTimestamp: Date.now(),
+      duration,
+      completedDate: todayString(),
+      isActive: false,
+    };
+    set({ session: null });
+    storage.remove('activeSession');
+    return finished;
+  },
+
+  abandonSession() {
+    set({ session: null });
+    storage.remove('activeSession');
+  },
+}));
+</file>
+
+<file path="components/exercise/CompletionOverlay.tsx">
+'use client';
+
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { Trophy, Home, Zap, Clock } from 'lucide-react';
+
+interface CompletionOverlayProps {
+  duration:      number; // seconds
+  exerciseCount: number;
+}
+
+export function CompletionOverlay({ duration, exerciseCount }: CompletionOverlayProps) {
+  const router  = useRouter();
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration % 60;
+
+  /* Auto-redirect after 5s — enough time to feel rewarding */
+  useEffect(() => {
+    const t = setTimeout(() => router.push('/'), 5000);
+    return () => clearTimeout(t);
+  }, [router]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.28, ease: 'easeOut' }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-6"
+      style={{
+        /* Theme-aware overlay — works in both dark and light */
+        background: 'color-mix(in srgb, var(--bg) 88%, transparent)',
+        backdropFilter: 'blur(32px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(32px) saturate(160%)',
+      }}
+    >
+      {/* ── Expanding ring burst — transform only, no layout reflow ── */}
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            width:       80,
+            height:      80,
+            border:      '2px solid var(--accent)',
+            pointerEvents: 'none',
+          }}
+          animate={{
+            scale:   [1, 5 + i * 1.6],
+            opacity: [0.55, 0],
+          }}
+          transition={{
+            duration: 1.6,
+            delay:    i * 0.18,
+            ease:     'easeOut',
+          }}
+        />
+      ))}
+
+      {/* ── Trophy icon ──────────────────────────────────────────── */}
+      <motion.div
+        initial={{ scale: 0, rotate: -24 }}
+        animate={{ scale: 1, rotate: 0   }}
+        transition={{
+          type:      'spring',
+          stiffness: 280,
+          damping:   18,
+          delay:     0.12,
+        }}
+        className="relative flex items-center justify-center mb-7"
+        style={{
+          width:        96,
+          height:       96,
+          background:   'linear-gradient(135deg, var(--accent), var(--secondary-accent))',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow:    '0 0 48px var(--accent-glow), 0 8px 32px rgba(108,99,255,0.30)',
+        }}
+      >
+        <Trophy size={46} color="#fff" strokeWidth={1.8} />
+      </motion.div>
+
+      {/* ── Headline ─────────────────────────────────────────────── */}
+      <motion.h1
+        initial={{ opacity: 0, y: 22 }}
+        animate={{ opacity: 1, y: 0  }}
+        transition={{ type: 'spring', stiffness: 320, damping: 24, delay: 0.28 }}
+        className="font-display font-bold mb-2"
+        style={{ fontSize: 'clamp(2rem, 8vw, 2.8rem)', color: 'var(--text-primary)' }}
+      >
+        Workout Done! 🎉
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0  }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.40 }}
+        className="text-base mb-8"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        You crushed it. Keep the streak alive!
+      </motion.p>
+
+      {/* ── Stat cards ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0  }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.50 }}
+        className="flex gap-3 mb-10 w-full max-w-xs"
+      >
+        {[
+          {
+            icon:  <Zap  size={18} style={{ color: 'var(--accent)' }} />,
+            value: `${exerciseCount}`,
+            label: 'Exercises',
+            bg:    'var(--accent-dim)',
+            border:'rgba(108,99,255,0.20)',
+          },
+          {
+            icon:  <Clock size={18} style={{ color: 'var(--success)' }} />,
+            value: `${minutes}m ${String(seconds).padStart(2,'0')}s`,
+            label: 'Duration',
+            bg:    'var(--success-dim)',
+            border:'rgba(52,211,153,0.20)',
+          },
+        ].map(({ icon, value, label, bg, border }) => (
+          <div
+            key={label}
+            className="flex-1 flex flex-col items-center gap-1.5 py-4 px-3"
+            style={{
+              background:   bg,
+              border:       `1px solid ${border}`,
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            {icon}
+            <span
+              className="font-display font-bold tabular-nums"
+              style={{ fontSize: '1.35rem', color: 'var(--text-primary)' }}
+            >
+              {value}
+            </span>
+            <span
+              className="section-label"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {label}
+            </span>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* ── Home CTA ─────────────────────────────────────────────── */}
+      <motion.button
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0  }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.62 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => router.push('/')}
+        className="flex items-center gap-2.5 font-semibold font-display text-white"
+        style={{
+          background:   'linear-gradient(135deg, var(--accent), var(--secondary-accent))',
+          borderRadius: 'var(--radius-xl)',
+          padding:      '1rem 2.5rem',
+          boxShadow:    '0 4px 24px var(--accent-glow)',
+          minHeight:    '56px',
+        }}
+      >
+        <Home size={18} strokeWidth={2.2} />
+        Back to Home
+      </motion.button>
+
+      {/* Auto-dismiss hint */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+        className="absolute bottom-12 text-xs"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        Redirecting in 5s…
+      </motion.p>
+    </motion.div>
+  );
+}
+</file>
+
+<file path="app/exercise/[dayId]/page.tsx">
 'use client';
 
 import { useState } from 'react';
@@ -40,7 +367,6 @@ export default function WorkoutDayPage() {
   const [completedSession, setCompletedSession] = useState<{
     duration: number;
     count: number;
-    muscleGroups: string[];
   } | null>(null);
 
   const workoutDay   = workoutDayById(dayId);
@@ -84,7 +410,6 @@ export default function WorkoutDayPage() {
         setCompletedSession({
           duration: finished.duration ?? 0,
           count: exercises.length,
-          muscleGroups: workoutDay?.muscleGroups ?? [],
         });
       }
     }
@@ -95,7 +420,6 @@ export default function WorkoutDayPage() {
       <CompletionOverlay
         duration={completedSession.duration}
         exerciseCount={completedSession.count}
-        muscleGroups={completedSession.muscleGroups}
       />
     );
   }
@@ -294,3 +618,6 @@ export default function WorkoutDayPage() {
     </PageTransition>
   );
 }
+</file>
+
+</files>

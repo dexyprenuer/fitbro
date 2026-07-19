@@ -8,9 +8,10 @@ import { Trophy, Home, Zap, Clock } from 'lucide-react';
 interface CompletionOverlayProps {
   duration:      number; // seconds
   exerciseCount: number;
+  muscleGroups?: string[];
 }
 
-export function CompletionOverlay({ duration, exerciseCount }: CompletionOverlayProps) {
+export function CompletionOverlay({ duration, exerciseCount, muscleGroups = [] }: CompletionOverlayProps) {
   const router  = useRouter();
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
@@ -94,11 +95,38 @@ export function CompletionOverlay({ duration, exerciseCount }: CompletionOverlay
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0  }}
         transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.40 }}
-        className="text-base mb-8"
+        className="text-base mb-4"
         style={{ color: 'var(--text-secondary)' }}
       >
         You crushed it. Keep the streak alive!
       </motion.p>
+
+      {/* ── Muscle groups trained ────────────────────────────────── */}
+      {muscleGroups.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.46 }}
+          className="flex flex-wrap items-center justify-center gap-1.5 mb-6 max-w-xs"
+        >
+          <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+            You trained:
+          </span>
+          {muscleGroups.map((m) => (
+            <span
+              key={m}
+              className="px-2.5 py-1 text-xs font-semibold"
+              style={{
+                background: 'var(--accent-dim)',
+                color: 'var(--accent)',
+                borderRadius: 'var(--radius-full)',
+              }}
+            >
+              {m}
+            </span>
+          ))}
+        </motion.div>
+      )}
 
       {/* ── Stat cards ───────────────────────────────────────────── */}
       <motion.div
