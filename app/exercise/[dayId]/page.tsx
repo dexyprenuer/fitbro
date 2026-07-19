@@ -12,6 +12,7 @@ import { ExerciseList } from '@/components/exercise/ExerciseList';
 import { SessionExerciseCard } from '@/components/exercise/SessionExerciseCard';
 import { SessionTimer } from '@/components/exercise/SessionTimer';
 import { CompletionOverlay } from '@/components/exercise/CompletionOverlay';
+import { ChainInterstitial } from '@/components/exercise/ChainInterstitial';
 import { useRoutineStore } from '@/store/useRoutineStore';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useAppStore } from '@/store/useAppStore';
@@ -31,25 +32,35 @@ export default function WorkoutDayPage() {
   const { dayId } = useParams<{ dayId: string }>();
   const router    = useRouter();
 
-  const workoutDayById         = useRoutineStore((s) => s.workoutDayById);
-  const activeRoutine          = useRoutineStore((s) => s.activeRoutine);
+  const workoutDayById          = useRoutineStore((s) => s.workoutDayById);
+  const workoutDayByTitle       = useRoutineStore((s) => s.workoutDayByTitle);
+  const activeRoutine           = useRoutineStore((s) => s.activeRoutine);
   const { session, startSession, completeExercise, endSession } = useSessionStore();
   const recordWorkoutCompletion = useAppStore((s) => s.recordWorkoutCompletion);
 
-  const [showInfo, setShowInfo]             = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [completedSession, setCompletedSession] = useState<{
     duration: number;
     count: number;
     muscleGroups: string[];
   } | null>(null);
 
-  const workoutDay   = workoutDayById(dayId);
-  const routine      = activeRoutine();
-  const isThisSession = session?.isActive && session.workoutDayId === dayId;
-  const exercises    = workoutDay?.exercises ?? [];
-  const currentIdx   = isThisSession ? session.currentExerciseIndex : 0;
+  // Tracks which day titles have already been run in this chain, so a day
+  // that's tagged by more than one other day (or cross-tags back) never
+  // repeats. Also drives whether we show the interstitial or the trophy.
+  const [chainedTitles, setChainedTitles] = useState<string[]>([]);
+  const [nextChainDay, setNextChainDay] = useState<{ id: string; title: string } | null>(null);
+  const [totalChainDuration, setTotalChainDuration] = useState(0);
+  const [totalChainCount, setTotalChainCount] = useState(0);
+  const [allTrainedGroups, setAllTrainedGroups] = useState<string[]>([]);
+
+  const workoutDay    = workoutDayById(dayId);
+  const routine        = activeRoutine();
+  const isThisSession   = session?.isActive && session.workoutDayId === dayId;
+  const exercises       = workoutDay?.exercises ?? [];
+  const currentIdx      = isThisSession ? session.currentExerciseIndex : 0;
   const currentExercise = exercises[currentIdx];
-  const isRunning    = isThisSession;
+  const isRunning        = isThisSession;
 
   if (!workoutDay) {
     return (
@@ -72,6 +83,21 @@ export default function WorkoutDayPage() {
     startSession(workoutDay!.id, routine.id);
   }
 
+  // Finds the next untried tagged muscle group that maps to a real, distinct
+  // WorkoutDay in the active routine.
+  function findNextChainDay(finishedDay: typeof workoutDay, triedTitles: string[]) {
+    if (!finishedDay?.muscleGroups) return null;
+    for (const tag of finishedDay.muscleGroups) {
+      if (tag.trim().toLowerCase() === finishedDay.title.trim().toLowerCase()) continue; // skip self
+      if (triedTitles.includes(tag.toLowerCase())) continue; // already run
+      const match = workoutDayByTitle(tag);
+      if (match && match.id !== finishedDay.id) {
+        return { id: match.id, title: match.title };
+      }
+    }
+    return null;
+  }
+
   function handleExerciseDone() {
     if (!isThisSession || !session) return;
     const nextIdx = session.currentExerciseIndex + 1;
@@ -79,15 +105,61 @@ export default function WorkoutDayPage() {
 
     if (nextIdx >= exercises.length) {
       const finished = endSession();
-      if (finished) {
-        recordWorkoutCompletion(dayId);
+      if (!finished) return;
+
+      recordWorkoutCompletion(dayId);
+
+      const finishedTitleLower = workoutDay!.title.trim().toLowerCase();
+      const updatedTriedTitles = [...chainedTitles, finishedTitleLower];
+      const updatedDuration = totalChainDuration + (finished.duration ?? 0);
+      const updatedCount = totalChainCount + exercises.length;
+      const updatedGroups = [
+        ...allTrainedGroups,
+        ...(workoutDay!.muscleGroups ?? []).filter((g) => !allTrainedGroups.includes(g)),
+      ];
+
+      const next = findNextChainDay(workoutDay, updatedTriedTitles);
+
+      setChainedTitles(updatedTriedTitles);
+      setTotalChainDuration(updatedDuration);
+      setTotalChainCount(updatedCount);
+      setAllTrainedGroups(updatedGroups);
+
+      if (next) {
+        setNextChainDay(next);
+      } else {
         setCompletedSession({
-          duration: finished.duration ?? 0,
-          count: exercises.length,
-          muscleGroups: workoutDay?.muscleGroups ?? [],
+          duration: updatedDuration,
+          count: updatedCount,
+          muscleGroups: updatedGroups,
         });
       }
     }
+  }
+
+  function handleContinueChain() {
+    if (!nextChainDay) return;
+    router.push(`/exercise/${nextChainDay.id}`);
+  }
+
+  function handleStopChain() {
+    setCompletedSession({
+      duration: totalChainDuration,
+      count: totalChainCount,
+      muscleGroups: allTrainedGroups,
+    });
+    setNextChainDay(null);
+  }
+
+  if (nextChainDay) {
+    return (
+      <ChainInterstitial
+        completedTitle={workoutDay.title}
+        nextTitle={nextChainDay.title}
+        onContinue={handleContinueChain}
+        onStopHere={handleStopChain}
+      />
+    );
   }
 
   if (completedSession) {

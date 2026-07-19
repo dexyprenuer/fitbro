@@ -19,6 +19,7 @@ interface RoutineStore {
   activeRoutine: () => Routine;
   todaysWorkoutDay: () => WorkoutDay | null;
   workoutDayById: (id: string) => WorkoutDay | undefined;
+  workoutDayByTitle: (title: string) => WorkoutDay | undefined;
   setActiveRoutine: (id: string) => void;
   saveCustomRoutine: (payload: {
     name: string;
@@ -70,6 +71,12 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
   workoutDayById(id) {
     return get().activeRoutine().workoutDays.find((d) => d.id === id);
+  },
+
+  workoutDayByTitle(title) {
+    return get().activeRoutine().workoutDays.find(
+      (d) => d.title.trim().toLowerCase() === title.trim().toLowerCase()
+    );
   },
 
   setActiveRoutine(id) {
